@@ -92,6 +92,8 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
             enddo
         enddo
 
+    ! loop on old-style regions, still supported for now:
+    
     rloop: do m=1,num_regions
         if (t < regions(m)%t_low .or. t > regions(m)%t_hi) then
             cycle rloop  ! no intersection
@@ -119,7 +121,8 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
          enddo
     enddo rloop
 
-    ! Ruled regions:
+
+    ! Loop on new "ruled rectangle" flagregions:
     
     rrloop: do m=1,num_rregions
     
@@ -144,7 +147,7 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
             j2 = min(floor((rr%y2bb - ylower) / dy) + 1, my)
         endif
 
-        ! cell overlaps bounding box, so need to check:
+        ! patch overlaps bounding box, so need to check:
         
         ! first check if this rregion could affect anything already set:    
 !        min_current_minlevel = minval(minlevel(i1:i2,j1:j2))
@@ -179,9 +182,6 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                     k2 = min(k-1, rr%nrules-1)
                     endif ! rr%ds <= 0
                     
-                if (k2 < k1) then
-                    write(6,*) '*** Problem?? k1, k2: ',k1,k2
-                    endif
                     
                 jloop1: do j=j1,j2
                     y_low = ylower + (j - 1) * dy
@@ -202,9 +202,9 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                     else 
                         ! rr%method == 1, linear interpolation (trapezoids):
                         do k=k1,k2
-                            alpha_x_low = (y_low - rr%s(k)) &
+                            alpha_x_low = (x_low - rr%s(k)) &
                                         / (rr%s(k+1) - rr%s(k))
-                            alpha_x_hi = (y_hi - rr%s(k)) &
+                            alpha_x_hi = (x_hi - rr%s(k)) &
                                         / (rr%s(k+1) - rr%s(k))
                             y_lower_x_low = (1-alpha_x_low) * rr%lower(k) &
                                          + alpha_x_low * rr%lower(k+1)
@@ -251,10 +251,7 @@ subroutine flagregions2(mx,my,mbuff,xlower,ylower,dx,dy,level,t, &
                             enddo
                         k2 = min(k-1, rr%nrules-1)
                         endif ! rr%ds <= 0
-                        
-                    if (k2 < k1) then
-                        write(6,*) '*** Problem?? k1, k2: ',k1,k2
-                        endif
+
                         
                     iloop2: do i=i1,i2
                         x_low = xlower + (i - 1) * dx
