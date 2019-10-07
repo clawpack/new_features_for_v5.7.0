@@ -48,6 +48,7 @@ class FlagRegion(clawpack.clawutil.data.ClawData):
         self.add_attribute('maxlevel',None)
         self.add_attribute('t1',None)
         self.add_attribute('t2',None)
+        self.add_attribute('spatial_region_type',None)
         self.add_attribute('spatial_region',None)
         self.add_attribute('spatial_region_file',None)
         
@@ -63,6 +64,7 @@ class FlagRegion(clawpack.clawutil.data.ClawData):
             else:
                 # assume region[4:] is the spatial extent from old style
                 self.spatial_region = region[4:]
+            self.spatial_region_type = 1
                 
             if type(self.spatial_region) is list:
                 assert len(self.spatial_region) == 2*self.num_dim, \
@@ -73,6 +75,7 @@ class FlagRegion(clawpack.clawutil.data.ClawData):
                 # assumed to be path to RuledRectangle file
                 assert num_dim==2, '*** RuledRectange only works in 2d'
                 self.spatial_region_file = self.spatial_region
+                self.spatial_region_type = 2
             else:
                 raise TypeError('self.spatial_region has invalid type')
         
@@ -123,13 +126,20 @@ class FlagRegionData(clawpack.clawutil.data.ClawData):
             flagregion.data_write('maxlevel')
             flagregion.data_write('t1')
             flagregion.data_write('t2')
-            if type(flagregion.spatial_region_file) is str:
-                # assumed to be path to RuledRectangle file
-                flagregion.data_write('spatial_region_file')
-            else:
-                # eventually add support for old-style regions,
-                # and writing RuledRectangle directly.
-                raise ValueError('*** FlagRegionData.write requires path to RuledRectangle')
+            flagregion.data_write('spatial_region_type')
+            
+            if flagregion.spatial_region_type == 1:
+                # spatial_region is an extent [x1,x2,y1,y2]
+                assert len(flagregion.spatial_region) == 4, \
+                    "*** FlagRegionData.write requires len(spatial_region) = 4"
+                flagregion.data_write('spatial_region')
+                
+            elif flagregion.spatial_region_type == 2:
+                if type(flagregion.spatial_region_file) is str:
+                    # assumed to be path to RuledRectangle file
+                    flagregion.data_write('spatial_region_file')
+                else:
+                    raise ValueError('*** FlagRegionData.write requires path to RuledRectangle')
                     
         self.close_data_file()
 
