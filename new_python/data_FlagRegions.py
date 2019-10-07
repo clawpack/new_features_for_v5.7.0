@@ -12,9 +12,13 @@ flagregion attributes:
     maxlevel
     t1
     t2
-    spatial_region = [x1,x2,y1,y2] or RuledRectangle
+    spatial_region_type = 1 for rectangle, 2 for RuledRectangle
+    if spatial_region_type == 1:
+        spatial_region = [x1,x2,y1,y2] 
+    if spatial_region_type == 2:
+        spatial_region_file = file describing RuledRectangle
     
-other possibilities:
+Possible future attributes:
     flag_method - (e.g. adjoint, wave_tolerance) to use in this region
     tolerance - for flagging in this region
     
@@ -35,10 +39,11 @@ class FlagRegion(clawpack.clawutil.data.ClawData):
     
     def __init__(self, num_dim, region=None):
         r"""
-        Note: for backward compatibility, can pass in a region 
+        Note: for backward compatibility, can pass in a old-style region 
         in the form (in 2d):
             [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
         and it will be converted to the new form.
+        
         """
         
         super(FlagRegion,self).__init__()
@@ -53,40 +58,27 @@ class FlagRegion(clawpack.clawutil.data.ClawData):
         self.add_attribute('spatial_region_file',None)
         
         if region is not None:
-            # region is of the form [minlevel,maxlevel,t1,t2,spatial_region]
-            # or for backward compatibility an old-style region
-            self.minlevel = region[0]
-            self.maxlevel = region[1]
-            self.t1 = region[2]
-            self.t2 = region[3]
-            if len(region)==5:
-                self.spatial_region = region[4]
-            else:
-                # assume region[4:] is the spatial extent from old style
-                self.spatial_region = region[4:]
-            self.spatial_region_type = 1
-                
-            if type(self.spatial_region) is list:
-                assert len(self.spatial_region) == 2*self.num_dim, \
-                        '*** spatial_region has wrong length for num_dim'
-            elif type(self.spatial_region) is region_tools.RuledRectangle:
-                assert num_dim==2, '*** RuledRectange only works in 2d'
-            elif type(self.spatial_region) is str:
-                # assumed to be path to RuledRectangle file
-                assert num_dim==2, '*** RuledRectange only works in 2d'
-                self.spatial_region_file = self.spatial_region
-                self.spatial_region_type = 2
-            else:
-                raise TypeError('self.spatial_region has invalid type')
+            self.convert_old_region(region)
+
         
     def convert_old_region(region):
+        """
+        Take a list region = [minlevel, maxlevel, t1, t2, x1, x2, y1, y2]
+        in the old style and convert to a new flagregion.
+        """
         self.minlevel = region[0]
         self.maxlevel = region[1]
         self.t1 = region[2]
         self.t2 = region[3]
+        self.spatial_region_type = 1  # rectangle
         self.spatial_region = region[4:]
         
     def read_spatial_region(self, fname=None):
+        """
+        Reads a ruled rectangle and assigns to self.spatial_region
+        But this isn't really supported yet, since cannot write to 
+        flagregions.data.
+        """
         if fname is None:
             fname = self.spatial_region_file
         if not os.path.isfile(fname):
@@ -112,7 +104,10 @@ class FlagRegionData(clawpack.clawutil.data.ClawData):
 
 
     def write(self,out_file='flagregions.data',data_source='setrun.py'):
-
+        """
+        Write out the flagregion.data file that will be read by the Fortran
+        code.  
+        """
 
         self.open_data_file(out_file,data_source)
 
@@ -144,7 +139,7 @@ class FlagRegionData(clawpack.clawutil.data.ClawData):
         self.close_data_file()
 
 
-    def read(self, path, force=False):
+    def read(self, path='flagregions.data', force=False):
         r"""Read in flagregion data from file at path
         """
 
@@ -184,12 +179,19 @@ class FlagRegionData(clawpack.clawutil.data.ClawData):
                 line = data_file.readline().split()
                 flagregion.t2 = float(line[0])
                 line = data_file.readline().split()
+                flagregion.spatial_region_type = int(line[0])
                 
-                # for now the next line is assumed to be path to a
-                # RuledRectangle file, strip quotes
-                flagregion.spatial_region_file = line[0][1:-1] 
-                # read the file: 
-                flagregion.read_spatial_region()
+                line = data_file.readline().split()
+                if flagregion.spatial_region_type == 1:
+                    flagregion.spatial_region = [float(val) for val in line[:4]]
+                elif flagregion.spatial_region_type == 2:
+                    # the next line is assumed to be path to a
+                    # RuledRectangle file, strip quotes
+                    flagregion.spatial_region_file = line[0][1:-1] 
+                    # read the file: 
+                    flagregion.read_spatial_region()
+                else:
+                    raise ValueError('*** Unrecognized spatial_region_type')
                 
                 self.flagregions.append(flagregion)
 
