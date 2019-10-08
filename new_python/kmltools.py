@@ -910,15 +910,19 @@ def make_input_data_kmls(rundata, combined=False):
         dtopo2kml(dtopo_file_name, dtopo_type)
         
 
-def pcolorcells_for_kml(x, y, Z, png_filename=None, dpc=2, max_inches=15., 
+def pcolorcells_for_kml(X, Y, Z, png_filename=None, dpc=2, max_inches=15., 
                         verbose=True, **kwargs):
     
     """
     Wraps pcolormesh in a way that a png file is created that can be viewed
     on Google Earth with proper alignment and with sharp grid cell edges.
-
-    x,y,Z is the data to be plotted.  It is assumed to be finite volume data
+    Works if X,Y are cell centers or edges, and X,Y can be 2d or 1d arrays. 
+    
+    X,Y,Z is the data to be plotted.  It is assumed to be finite volume data
     where Z[i,j] is a constant value over a grid cell.
+
+    Internally x,y are defined as 1d arrays since it is assumed the 
+    grids are Cartesian.
     
     If the length of the 1d arrays x and y match the dimensions of Z then 
     these are assumed to be cell center values. In this case the arrays 
@@ -963,8 +967,25 @@ def pcolorcells_for_kml(x, y, Z, png_filename=None, dpc=2, max_inches=15.,
 
     from matplotlib import pyplot as plt
     import numpy as np
-    import plottools  # FIX eventually to clawpack.visclaw.plottools
     
+    # If X is 2d extract proper 1d slice:
+    if X.ndim == 1:
+        x = X
+    elif X.ndim == 2:
+        if X[0,0] == X[0,1]:
+            x = X[:,0]
+        else:
+            x = X[0,:]
+            
+    # If Y is 2d extract proper 1d slice:
+    if Y.ndim == 1:
+        y = Y
+    elif Y.ndim == 2:
+        if Y[0,0] == Y[0,1]:
+            y = Y[:,0]
+        else:
+            y = Y[0,:]                    
+
     dx = x[1]-x[0]
     dy = y[1]-y[0]
     if len(x) == Z.shape[1]:
@@ -975,7 +996,7 @@ def pcolorcells_for_kml(x, y, Z, png_filename=None, dpc=2, max_inches=15.,
         xedge = x
     else:
         raise ValueError('x has unexpected length')
-        
+
     if len(y) == Z.shape[0]:
         # cell centers, so xedge should be expanded by dx/2 on each end:
         yedge = np.arange(y[0]-0.5*dy, y[-1]+dy, dy)
@@ -984,6 +1005,7 @@ def pcolorcells_for_kml(x, y, Z, png_filename=None, dpc=2, max_inches=15.,
         yedge = y
     else:
         raise ValueError('y has unexpected length')
+        
 
     x1 = xedge[0];  x2 = xedge[-1]
     y1 = yedge[0];  y2 = yedge[-1]
@@ -1022,8 +1044,7 @@ def pcolorcells_for_kml(x, y, Z, png_filename=None, dpc=2, max_inches=15.,
     fig = plt.figure(figsize=(x_inches,y_inches))
     ax = plt.axes()
     plt.axis('off')
-    #pc = plt.pcolormesh(xedge, yedge, Z, **kwargs)
-    pc = plottools.pcolorcells(xedge, yedge, Z, ax, **kwargs)
+    pc = plt.pcolormesh(xedge, yedge, Z, **kwargs)
     ax.set_xticks([])
     ax.set_yticks([])
     ax.set_frame_on(False)
