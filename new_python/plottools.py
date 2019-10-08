@@ -22,12 +22,16 @@ def plotbox(xy, kwargs={'color':'b', 'linewidth':2}):
 def pcolorcells(X, Y, Z, ax=None, **kwargs):
     """
     Wraps pcolormesh in a way that works if X,Y are cell centers or edges.
+    X,Y can be 2d or 1d arrays. 
     
     if `ax==None` then the plot is done on a new set of axes, otherwise on ax
 
-    x,y,Z is the data to be plotted.  It is assumed to be finite volume data
+    X,Y,Z is the data to be plotted.  It is assumed to be finite volume data
     where Z[i,j] is a constant value over a grid cell.
 
+    Internally x,y are defined as 1d arrays since it is assumed the 
+    grids are Cartesian.
+    
     If the length of the 1d arrays x and y match the dimensions of Z then
     these are assumed to be cell center values. In this case the arrays
     are expanded by one to obtain x_edge, y_edge as edge values,
@@ -68,6 +72,7 @@ def pcolorcells(X, Y, Z, ax=None, **kwargs):
 
     dx = x[1]-x[0]
     dy = y[1]-y[0]
+
     if len(x) == Z.shape[1]:
         # cell centers, so xedge should be expanded by dx/2 on each end:
         xedge = np.arange(x[0]-0.5*dx, x[-1]+dx, dx)
@@ -76,15 +81,6 @@ def pcolorcells(X, Y, Z, ax=None, **kwargs):
         xedge = x
     else:
         raise ValueError('x has unexpected length')
-
-    if len(y) == Z.shape[0]:
-        # cell centers, so xedge should be expanded by dx/2 on each end:
-        yedge = np.arange(y[0]-0.5*dy, y[-1]+dy, dy)
-    elif len(y) == Z.shape[0]+1:
-        # assume x already contains edge values
-        yedge = y
-    else:
-        raise ValueError('y has unexpected length')
 
     if len(y) == Z.shape[0]:
         # cell centers, so xedge should be expanded by dx/2 on each end:
