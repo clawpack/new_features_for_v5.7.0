@@ -11779,7 +11779,7 @@ div#notebook {
 <p><code>h[i,j] = max(0, sea_level - B[i,j])</code>.</p>
 <p>In some cases it is desirable to initialize the depth so that the surface is spatially varying.</p>
 <p>Two examples:</p>
-<p>First, in tsunami modeling of a nearfield event, the seafloor deformation due to an earthquake often extends onto shore in the region being modeled.  If the coastal region subsides, for example, then the land drops near the shore and the water adjacent drops as well.  If a grid patch was initialized before the deformation specified in the dtopo file by the formula above, then the depth <code>h[i,j]</code> does not decrease during the subsidence, which is the correct behavior.  However, in some cases the tsunami does not arrive at the shore quickly and so it is desirable to use coarser grids in early stages of the computation, introducing highly refined grids only after some specified time.  When new levels of refinement are first introduced into a simulation then the formula given above is used to initialize cells near the coast.  But if the coast subsided, the the formulat should really be replaced by:</p>
+<p>First, in tsunami modeling of a nearfield event, the seafloor deformation due to an earthquake often extends onto shore in the region being modeled.  If the coastal region subsides, for example, then the land drops near the shore and the water adjacent drops as well.  If a grid patch was initialized before the deformation specified in the dtopo file by the formula above, then the depth <code>h[i,j]</code> does not decrease during the subsidence, which is the correct behavior.  However, in some cases the tsunami does not arrive at the shore quickly and so it is desirable to use coarser grids in early stages of the computation, introducing highly refined grids only after some specified time.  When new levels of refinement are first introduced into a simulation then the formula given above is used to initialize cells near the coast.  But if the coast subsided, the the formula should really be replaced by:</p>
 <p><code>h[i,j] = max(0, sea_level + dz[i,j] - B[i,j])</code></p>
 <p>where <code>dz[i,j]</code> is obtained by interpolating the co-seismic deformation specified in the dtopo file to the cell center.  Failure to do this can sometimes result in large areas being flooded by the initialization that should not be flooded by the tsunami.</p>
 <p>Second, there may be onshore lakes whose initial surface elevation should be different than <code>sea_level</code>, or for modeling dam break problems there may be a collection of lakes of interest at different initial elevations.</p>
@@ -11795,6 +11795,15 @@ div#notebook {
 <h2 id="The-set_eta_init-subroutine">The <code>set_eta_init</code> subroutine<a class="anchor-link" href="#The-set_eta_init-subroutine">&#182;</a></h2><p>A new subroutine has been introduced called <code>set_eta_init</code> that can be called for each grid patch and will return the desired <code>eta_init</code> value for each cell. A new boolean parameter <code>variable_eta_init</code> can be set to to <code>True</code> to indicate that this routine should be called.</p>
 <p>The user can provide a custom routine.  For example, for a simulation where a lake behind a dam is desired to be set to one elevation while everywhere else there should be no water, this routine could check the <code>(x,y)</code> location of each cell and set <code>eta_init</code> either to the lake elevation or to a small value lower than any topography (to force <code>h = 0</code>) depending on the location.</p>
 <p>A version of this routine called <code>set_eta_init_dtopo.f90</code> can be used to deal with the first situation described above, where we want to set <code>eta_init[i,j] = sea_level + dz[i,j]</code> in each cell, with <code>dz[i,j]</code> obtained by interpolating the co-seismic deformation specified in the dtopo file to the cell center.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="Index.html">Back to Index.html</a>, or go on to next notebook, <a href="MarchingFront.html">MarchingFront.html</a>.</p>
 
 </div>
 </div>
