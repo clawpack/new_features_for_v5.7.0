@@ -1,6 +1,6 @@
 subroutine setprob()
 
-    use topo_module, only: variable_eta_init, topo_missing
+    use topo_module, only: variable_eta_init
     use qinit_module, only: read_wet_mask, use_wet_mask, t_stays_dry
     implicit none
     character*150 :: fname_wet_mask,fname
@@ -16,9 +16,7 @@ subroutine setprob()
     call opendatafile(iunit, fname)
 
     read(iunit,*) variable_eta_init
-    read(iunit,*) topo_missing
     read(iunit,*) use_wet_mask
-
 
     if (use_wet_mask) then
         read(iunit,*) t_stays_dry
