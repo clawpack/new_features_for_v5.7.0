@@ -270,9 +270,13 @@ def regions2kml(rundata=None,fname='regions.kml',verbose=True,combined=True):
                 fname = name + '.kml'
             kml_text = kml_header(fname)
             
-        if flagregion.spatial_region is None:
+        #if flagregion.spatial_region is None:
+        #    flagregion.read_spatial_region()
+        if flagregion.spatial_region_type == 1:
+            x1,x2,y1,y2 = flagregion.spatial_region
+        else:
             flagregion.read_spatial_region()
-        x1,x2,y1,y2 = flagregion.spatial_region.bounding_box()
+            x1,x2,y1,y2 = flagregion.spatial_region.bounding_box()
         minlevel = flagregion.minlevel
         maxlevel = flagregion.maxlevel
 
@@ -314,7 +318,13 @@ def regions2kml(rundata=None,fname='regions.kml',verbose=True,combined=True):
         mapping['color'] = "00FFFF"  # yellow
         mapping['width'] = 2
         
-        x,y = flagregion.spatial_region.vertices()
+        if flagregion.spatial_region_type == 1:
+            x1,x2,y1,y2 = flagregion.spatial_region
+            x = [x1,x1,x2,x2,x1]
+            y = [y1,y2,y2,y1,y1]
+        else:
+            x,y = flagregion.spatial_region.vertices()
+            
         v = "\n"
         for j in range(len(x)):
             v = v + "%s,%s,%s\n" % (f2s(x[j]),f2s(y[j]),f2s(elev))
