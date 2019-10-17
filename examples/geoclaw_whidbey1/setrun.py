@@ -24,6 +24,7 @@ sys.path.insert(0, new_code)
 import data_FlagRegions
 import kmltools
 import region_tools
+import fgmax_tools
 
 #------------------------------
 def setrun(claw_pkg='geoclaw'):
@@ -55,18 +56,14 @@ def setrun(claw_pkg='geoclaw'):
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
     probdata.add_param('variable_sea_level', True)
     
-    use_wet_mask = False
+    use_wet_mask = True
     probdata.add_param('use_wet_mask', use_wet_mask)
 
     if use_wet_mask:
-        probdata.add_param('t_stays_dry', 90*60.)
-        fname = os.path.abspath('input_files/wet_mask.data')
+        probdata.add_param('t_stays_dry', 15*60.)
+        fname = os.path.abspath('input_files/allow_wet_init.data')
         probdata.add_param('fname_wet_mask', fname)
 
-    #------------------------------------------------------------------
-    # GeoClaw specific parameters:
-    #------------------------------------------------------------------
-    rundata = setgeo(rundata)
 
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -151,8 +148,8 @@ def setrun(claw_pkg='geoclaw'):
 
     if clawdata.output_style==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.num_output_times = 8
-        clawdata.tfinal = 40 * 60.
+        clawdata.num_output_times = 9
+        clawdata.tfinal = 45 * 60.
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -307,13 +304,13 @@ def setrun(claw_pkg='geoclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 3
+    amrdata.amr_levels_max = 4
 
     # List of refinement ratios at each level (length at least mxnest-1)
-    # dx = dy = 1', 6", 2", 1/3":
-    amrdata.refinement_ratios_x = [10,3,6]
-    amrdata.refinement_ratios_y = [10,3,6]
-    amrdata.refinement_ratios_t = [10,3,6]
+    # dx = dy = 1', 10", 2", 1/3":
+    amrdata.refinement_ratios_x = [6,5,6]
+    amrdata.refinement_ratios_y = [6,5,6]
+    amrdata.refinement_ratios_t = [6,5,6]
 
 
 
@@ -410,8 +407,11 @@ def setrun(claw_pkg='geoclaw'):
     flagregion.maxlevel = 4
     flagregion.t1 = 11*60.
     flagregion.t2 = 1e9
-    flagregion.spatial_region_type = 1  # Rectangle
-    flagregion.spatial_region = [-122.46, -122.41, 47.93, 47.96]
+    #flagregion.spatial_region_type = 1  # Rectangle
+    #flagregion.spatial_region = [-122.46, -122.41, 47.93, 47.96]
+    flagregion.spatial_region_type = 2  # Ruled Rectangle
+    flagregion.spatial_region_file = os.path.abspath(\
+                'input_files/RuledRectangle_whidbey1.data')
     flagregions.append(flagregion)
 
 
@@ -423,18 +423,9 @@ def setrun(claw_pkg='geoclaw'):
     rundata.gaugedata.gauges = []
 
 
-    return rundata
-    # end of function setrun
-    # ----------------------
 
 
-#-------------------
-def setgeo(rundata):
-#-------------------
-    """
-    Set GeoClaw specific runtime parameters.
-    For documentation see ....
-    """
+    # Set GeoClaw specific runtime parameters.
 
     try:
         geo_data = rundata.geo_data
@@ -499,31 +490,31 @@ def setgeo(rundata):
 
     rundata.fgmax_data.fgmax_files = fgmax_files = []
 
-    if 0:
-        #rundata.fgmax_data.fgmax_files = fgmax_files = ['fgmax_header.data']
+    if 1:
+        rundata.fgmax_data.fgmax_files = ['fgmax_header.data']
 
         # Create header file:
 
         fg = fgmax_tools.FGmaxGrid()
-        fg.point_style = 10       # scattered points
+        fg.point_style = 4       # scattered points
         fg.npts = 0
 
-        # fg.npts==0 now indicates a separate file containing x,y points:
-        fg.xy_fname = os.path.abspath('input_files/fgmax_pts_topostyle.data')
+        fg.xy_fname = os.path.abspath('input_files/fgmax_pts_whidbey1.data')
 
-        fg.min_level_check = amr_levels_max  # which levels to monitor max on
+        # monitor fgmax points only on finest level:
+        fg.min_level_check = amrdata.amr_levels_max 
 
-        fg.tstart_max = 600.
-        fg.tend_max = 1.e10                  # when to stop monitoring max values
-        fg.dt_check = 20.                    # how often to update max values
+        fg.tstart_max = 600.              # when to start monitoring max values
+        fg.tend_max = 1.e10               # when to stop monitoring max values
+        fg.dt_check = 20.                 # how often to update max values
 
         fname = 'fgmax_header.data'
         fg.write_input_data(fname)
 
 
     return rundata
-    # end of function setgeo
-    # ----------------------:
+    # end of function setrun
+    # ----------------------
 
 
 

@@ -42,6 +42,10 @@ NEWGEO = ../../new_fortran_geoclaw
 # ---------------------------------------
 
 EXCLUDE_MODULES = \
+  $(GEOLIB)/topo_module.f90 \
+  $(GEOLIB)/qinit_module.f90 \
+  $(GEOLIB)/fgmax_module.f90 \
+  $(AMRLIB)/regions_module.f90 \
 
 EXCLUDE_SOURCES = \
 
@@ -59,6 +63,7 @@ MODULES = \
 SOURCES = \
   $(NEWAMR)/flagregions2.f90 \
   $(NEWGEO)/filpatch.f90 \
+  $(NEWGEO)/filval.f90 \
   $(NEWGEO)/set_eta_init_dtopo.f90 \
   $(NEWGEO)/fgmax_read.f90 \
   $(NEWGEO)/fgmax_finalize.f90 \

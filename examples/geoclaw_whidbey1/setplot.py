@@ -132,7 +132,7 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmax = cmax
     plotitem.add_colorbar = True
     plotitem.amr_celledges_show = [0,0,0]
-    plotitem.patchedges_show = 0
+    plotitem.amr_patchedges_show = [0,0,0,0]
     plotitem.amr_data_show = [1,1,1,1,1,0,0]
 
     # Land
@@ -143,7 +143,7 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmax = cmax_land
     plotitem.add_colorbar = False
     plotitem.amr_celledges_show = [0]
-    plotitem.patchedges_show = 0
+    plotitem.amr_patchedges_show = [0,0,0,0]
     plotitem.amr_data_show = [1,1,1,1,1,0,0]
 
     # add contour lines of bathy if desired:
