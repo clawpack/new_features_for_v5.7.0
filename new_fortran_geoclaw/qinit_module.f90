@@ -28,12 +28,12 @@ module qinit_module
     integer :: min_level_qinit
     integer :: max_level_qinit
 
-    ! for initializing using wet_mask to indicate wet regions:
+    ! for initializing using force_dry to indicate dry regions below sealevel:
 
-    integer :: mx_wet, my_wet
-    real(kind=8) :: xlow_wet, ylow_wet, xhi_wet, yhi_wet, dx_wet, dy_wet
-    integer(kind=1), allocatable :: wet_mask(:,:)
-    logical :: use_wet_mask
+    integer :: mx_fdry, my_fdry
+    real(kind=8) :: xlow_fdry, ylow_fdry, xhi_fdry, yhi_fdry, dx_fdry, dy_fdry
+    integer(kind=1), allocatable :: force_dry(:,:)
+    logical :: use_force_dry
     real(kind=8) :: t_stays_dry  ! always use mask up to this time
 
     ! to initialize using different initial eta values in different regions:
@@ -239,7 +239,7 @@ contains
         
     end subroutine read_qinit
 
-    subroutine read_wet_mask(fname)
+    subroutine read_force_dry(fname)
 
         use utility_module, only: parse_values
         character(len=*), intent(in) :: fname
@@ -252,35 +252,35 @@ contains
         open(unit=iunit,file=fname,status='old',form='formatted')
         !read(iunit,*) t_stays_dry
         !write(6,*) 't_stays_dry = ',t_stays_dry
-        read(iunit,*) mx_wet
-        read(iunit,*) my_wet
-        read(iunit,*) xlow_wet
-        read(iunit,*) ylow_wet
+        read(iunit,*) mx_fdry
+        read(iunit,*) my_fdry
+        read(iunit,*) xlow_fdry
+        read(iunit,*) ylow_fdry
 
         read(iunit,'(a)') str
         call parse_values(str, n, values)
-        dx_wet = values(1)
+        dx_fdry = values(1)
         if (n == 2) then
-            dy_wet = values(2)
+            dy_fdry = values(2)
           else
-            dy_wet = dx_wet
+            dy_fdry = dx_fdry
           endif
 
         read(iunit,*) nodata_value
-        allocate(wet_mask(mx_wet,my_wet))
+        allocate(force_dry(mx_fdry,my_fdry))
 
-        xhi_wet = xlow_wet + mx_wet*dx_wet
-        yhi_wet = ylow_wet + my_wet*dy_wet
-        write(6,*) '+++ xlow_wet, xhi_wet: ',xlow_wet, xhi_wet
-        write(6,*) '+++ ylow_wet, yhi_wet: ',ylow_wet, yhi_wet
+        xhi_fdry = xlow_fdry + mx_fdry*dx_fdry
+        yhi_fdry = ylow_fdry + my_fdry*dy_fdry
+        write(6,*) '+++ xlow_fdry, xhi_fdry: ',xlow_fdry, xhi_fdry
+        write(6,*) '+++ ylow_fdry, yhi_fdry: ',ylow_fdry, yhi_fdry
 
-        do j=1,my_wet
-            read(iunit, *) (wet_mask(i,j), i=1,mx_wet)
+        do j=1,my_fdry
+            read(iunit, *) (force_dry(i,j), i=1,mx_fdry)
             enddo
     
         close(iunit)
         return
-    end subroutine read_wet_mask
+    end subroutine read_force_dry
 
     
     subroutine read_eta_init(file_name)

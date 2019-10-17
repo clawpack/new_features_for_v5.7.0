@@ -23,8 +23,9 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     use geoclaw_module, only: dry_tolerance, sea_level
     use refinement_module, only: varRefTime
     use topo_module, only: variable_eta_init
-    use qinit_module, only: wet_mask,use_wet_mask,mx_wet, my_wet
-    use qinit_module, only: xlow_wet, ylow_wet, xhi_wet, yhi_wet, dx_wet, dy_wet
+    use qinit_module, only: force_dry,use_force_dry,mx_fdry, my_fdry
+    use qinit_module, only: xlow_fdry, ylow_fdry, xhi_fdry, yhi_fdry
+    use qinit_module, only: dx_fdry, dy_fdry
     use qinit_module, only: t_stays_dry
     
     implicit none
@@ -54,7 +55,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     logical :: sticksoutxfine, sticksoutyfine,sticksoutxcrse,sticksoutycrse
     real(kind=8) :: vetac(mic,mjc) ! for variable eta_init
     real(kind=8) :: x,y, ddxy
-    logical :: use_wet_mask_this_level
+    logical :: use_force_dry_this_level
 
 
     ! External function definitions
@@ -169,15 +170,15 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
       endif
 
     
-    use_wet_mask_this_level = use_wet_mask
-    if (use_wet_mask) then
-        ! check if wet_mask resolution the same as this level:
-        ddxy = max(abs(dx-dx_wet), abs(dy-dy_wet))
-        use_wet_mask_this_level = (ddxy < 0.01d0*min(dx_wet,dy_wet))
+    use_force_dry_this_level = use_force_dry
+    if (use_force_dry) then
+        ! check if force_dry resolution the same as this level:
+        ddxy = max(abs(dx-dx_fdry), abs(dy-dy_fdry))
+        use_force_dry_this_level = (ddxy < 0.01d0*min(dx_fdry,dy_fdry))
         endif
         
-    !if (use_wet_mask_this_level .and. (time <= t_stays_dry)) then
-    !    write(6,*) '+++ using wet mask in filval, t = ',time
+    !if (use_force_dry_this_level .and. (time <= t_stays_dry)) then
+    !    write(6,*) '+++ using force_dry in filval, t = ',time
     !    endif
     
     ! Prepare slopes - use min-mod limiters
@@ -226,22 +227,21 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
                        x = xleft + (ifine-0.5d0)*dx
                        y = ybot + (jfine-0.5d0)*dy
 
-                       ! Check cells newly initialized to wet using wet_mask:
-                       if (use_wet_mask_this_level .and. &
+                       ! Check cells newly initialized to wet using force_dry:
+                       if (use_force_dry_this_level .and. &
                                (((coarseval(2) == vetac(i,j)) &
                                .and. (val(1,ifine,jfine) > 0)) &
                                .or. (time <= t_stays_dry))) then
-                           ! check if in wet_mask region, and if
-                           ! surrounding DEM points all dry then set h_fine=0.
-                           ii = int((x - xlow_wet + 1d-7) / dx_wet)
-                           jj = int((y - ylow_wet + 1d-7) / dy_wet)
-                           jj = my_wet - jj  ! since index 1 corresponds to north edge
-                           if ((ii>=1) .and. (ii<=mx_wet) .and. &
-                               (jj>=1) .and. (jj<=my_wet)) then
-                               ! grid cell lies in region covered by wet_mask,
+                           ! check if in force_dry region
+                           ii = int((x - xlow_fdry + 1d-7) / dx_fdry)
+                           jj = int((y - ylow_fdry + 1d-7) / dy_fdry)
+                           jj = my_fdry - jj  ! since index 1 corresponds to north edge
+                           if ((ii>=1) .and. (ii<=mx_fdry) .and. &
+                               (jj>=1) .and. (jj<=my_fdry)) then
+                               ! grid cell lies in region covered by force_dry,
                                ! check if this cell is forced to be dry
                                ! Otherwise don't change value set above:
-                               if (wet_mask(ii,jj) == 0) then
+                               if (force_dry(ii,jj) == 1) then
                                    val(1,ifine,jfine) = 0.d0
                                    endif
                                endif

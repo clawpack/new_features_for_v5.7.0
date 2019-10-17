@@ -56,13 +56,13 @@ def setrun(claw_pkg='geoclaw'):
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
     probdata.add_param('variable_sea_level', True)
     
-    use_wet_mask = True
-    probdata.add_param('use_wet_mask', use_wet_mask)
+    use_force_dry = True
+    probdata.add_param('use_force_dry', use_force_dry)
 
-    if use_wet_mask:
+    if use_force_dry:
         probdata.add_param('t_stays_dry', 15*60.)
-        fname = os.path.abspath('input_files/allow_wet_init.data')
-        probdata.add_param('fname_wet_mask', fname)
+        fname = os.path.abspath('input_files/force_dry_init.data')
+        probdata.add_param('fname_force_dry', fname)
 
 
     #------------------------------------------------------------------

@@ -23,8 +23,9 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     use geoclaw_module, only: sea_level, dry_tolerance
     use topo_module, only: topo_finalized
     use topo_module, only: variable_eta_init
-    use qinit_module, only: wet_mask,use_wet_mask,mx_wet, my_wet
-    use qinit_module, only: xlow_wet, ylow_wet, xhi_wet, yhi_wet, dx_wet, dy_wet
+    use qinit_module, only: force_dry,use_force_dry,mx_fdry, my_fdry
+    use qinit_module, only: xlow_fdry, ylow_fdry, xhi_fdry, yhi_fdry
+    use qinit_module, only: dx_fdry, dy_fdry
     use qinit_module, only: t_stays_dry
 
     implicit none
@@ -76,7 +77,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     integer ::   fine_cell_count(ihi-ilo+3, jhi-jlo + 3)
 
     integer :: nghost_patch, lencrse
-    logical :: use_wet_mask_this_level
+    logical :: use_force_dry_this_level
     real(kind=8) :: ddxy
 
     ! Stack storage
@@ -100,15 +101,15 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     dx_fine     = hxposs(level)
     dy_fine     = hyposs(level)
     
-    use_wet_mask_this_level = use_wet_mask
-    if (use_wet_mask) then
-        ! check if wet_mask resolution the same as this level:
-        ddxy = max(abs(dx_fine-dx_wet), abs(dy_fine-dy_wet))
-        use_wet_mask_this_level = (ddxy < 0.01d0*min(dx_wet,dy_wet))
+    use_force_dry_this_level = use_force_dry
+    if (use_force_dry) then
+        ! check if force_dry resolution the same as this level:
+        ddxy = max(abs(dx_fine-dx_fdry), abs(dy_fine-dy_fdry))
+        use_force_dry_this_level = (ddxy < 0.01d0*min(dx_fdry,dy_fdry))
         endif
 
-    !if (use_wet_mask_this_level .and. (t <= t_stays_dry)) then
-    !    write(6,*) '+++ using wet mask in filval, t = ',t
+    !if (use_force_dry_this_level .and. (t <= t_stays_dry)) then
+    !    write(6,*) '+++ using force_dry in filval, t = ',t
     !    endif
             
     ! Coordinates of edges of patch (xlp,xrp,ybp,ytp)
@@ -333,21 +334,20 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
                     x = xlow_fine + (i_fine-0.5d0)*dx_fine
                     y = ylow_fine + (j_fine-0.5d0)*dy_fine
 
-                    if (use_wet_mask_this_level .and. &
+                    if (use_force_dry_this_level .and. &
                             (((eta_coarse(i_coarse,j_coarse) == veta_init_c) &
                             .and. (h_fine > 0)) &
                             .or. (t <= t_stays_dry))) then
-                        ! check if in wet_mask region, and if
-                        ! surrounding DEM points all dry then set h_fine=0.
-                        ii = int((x - xlow_wet + 1d-7) / dx_wet)
-                        jj = int((y - ylow_wet + 1d-7) / dy_wet)
-                        jj = my_wet - jj  ! since index 1 corresponds to north edge
-                        if ((ii>=1) .and. (ii<=mx_wet) .and. &
-                            (jj>=1) .and. (jj<=my_wet)) then
-                            ! grid cell lies in region covered by wet_mask,
+                        ! check if in force_dry region
+                        ii = int((x - xlow_fdry + 1d-7) / dx_fdry)
+                        jj = int((y - ylow_fdry + 1d-7) / dy_fdry)
+                        jj = my_fdry - jj  ! since index 1 corresponds to north edge
+                        if ((ii>=1) .and. (ii<=mx_fdry) .and. &
+                            (jj>=1) .and. (jj<=my_fdry)) then
+                            ! grid cell lies in region covered by force_dry,
                             ! check if this cell is forced to be dry      
                             ! Otherwise don't change value set above:
-                            if (wet_mask(ii,jj) == 0) then
+                            if (force_dry(ii,jj) == 1) then
                                 h_fine = 0.d0
                                 endif
                             endif

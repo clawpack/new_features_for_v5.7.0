@@ -2,8 +2,9 @@
 subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
     
     use qinit_module, only: qinit_type,add_perturbation
-    use qinit_module, only: wet_mask,use_wet_mask,mx_wet, my_wet
-    use qinit_module, only: xlow_wet, ylow_wet, xhi_wet, yhi_wet, dx_wet, dy_wet
+    use qinit_module, only: force_dry,use_force_dry,mx_fdry, my_fdry
+    use qinit_module, only: xlow_fdry, ylow_fdry, xhi_fdry, yhi_fdry
+    use qinit_module, only: dx_fdry, dy_fdry
     use geoclaw_module, only: sea_level
     use amr_module, only: t0
     use topo_module, only: variable_eta_init
@@ -36,31 +37,31 @@ subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
         q(1,i,j) = max(0.d0, veta(i,j) - aux(1,i,j))
     end forall
 
-    if (use_wet_mask) then
-     ! only use the wet_mask if it specified on a grid that matches the 
+    if (use_force_dry) then
+     ! only use the force_dry if it specified on a grid that matches the 
      ! resolution of this patch, since we only check the cell center:
-     ddxy = max(abs(dx-dx_wet), abs(dy-dy_wet))
-     if (ddxy < 0.01d0*min(dx_wet,dy_wet)) then
+     ddxy = max(abs(dx-dx_fdry), abs(dy-dy_fdry))
+     if (ddxy < 0.01d0*min(dx_fdry,dy_fdry)) then
        do i=1,mx
           x = xlower + (i-0.5d0)*dx
-          ii = int((x - xlow_wet + 1d-7) / dx_wet)
+          ii = int((x - xlow_fdry + 1d-7) / dx_fdry)
           do j=1,my
               y = ylower + (j-0.5d0)*dy
-              jj = int((y - ylow_wet + 1d-7) / dy_wet)
-              jj = my_wet - jj  ! since index 1 corresponds to north edge
-              if ((ii>=1) .and. (ii<=mx_wet) .and. &
-                  (jj>=1) .and. (jj<=my_wet)) then
-                  ! grid cell lies in region covered by wet_mask,
+              jj = int((y - ylow_fdry + 1d-7) / dy_fdry)
+              jj = my_fdry - jj  ! since index 1 corresponds to north edge
+              if ((ii>=1) .and. (ii<=mx_fdry) .and. &
+                  (jj>=1) .and. (jj<=my_fdry)) then
+                  ! grid cell lies in region covered by force_dry,
                   ! check if this cell is forced to be dry 
                   ! Otherwise don't change value set above:                  
-                  if (wet_mask(ii,jj) == 0) then
+                  if (force_dry(ii,jj) == 1) then
                       q(1,i,j) = 0.d0
                       endif
                   endif
           enddo ! loop on j
        enddo ! loop on i
-       endif ! dx and dy agree with dx_wet, dy_wet
-    endif ! use_wet_mask
+       endif ! dx and dy agree with dx_fdry, dy_fdry
+    endif ! use_force_dry
 
     if (dx <= 1.d0/3600.d0) then
      do i=1,mx
