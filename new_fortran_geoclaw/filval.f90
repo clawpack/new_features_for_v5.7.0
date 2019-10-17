@@ -248,21 +248,6 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
                                                               
                            endif
 
-                        ! special cases:
-                       if ((level >= 6) .and. &
-                           (((coarseval(2) == vetac(i,j)) &
-                                .and. (val(1,ifine,jfine) > 0)) &
-                                .or. (time <= t_stays_dry))) then
-                            ! special case of eastern Skagit delta:
-                            if (x>-122.33 .and. y>48.25 .and. y<48.4) then
-                               val(1,ifine,jfine) = 0.d0
-                               endif
-                            ! special case SE of Samish Island:
-                            if (x>-122.5 .and. y>48.52 .and. y<48.57) then
-                               val(1,ifine,jfine) = 0.d0
-                               endif
-                            endif
-
                                                     
                        finemass = finemass + val(1,ifine,jfine)
                        if (val(1,ifine,jfine) <= dry_tolerance) then

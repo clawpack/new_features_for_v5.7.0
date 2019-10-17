@@ -354,21 +354,6 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
 
                         endif
 
-                    ! special cases:
-                    if ((level >= 6) .and. &
-                        (((eta_coarse(i_coarse,j_coarse) == veta_init_c) &
-                            .and. (h_fine > 0)) &
-                            .or. (t <= t_stays_dry))) then
-                        ! special case of eastern Skagit delta:
-                        if (x>-122.33 .and. y>48.25 .and. y<48.4) then
-                           h_fine = 0.d0
-                           endif
-                        ! special case SE of Samish Island:
-                        if (x>-122.5 .and. y>48.52 .and. y<48.57) then
-                           h_fine = 0.d0
-                           endif
-                        endif
-
 
                     valbig(1,i_fine+nrowst-1, j_fine+ncolst-1) = h_fine
                     fine_mass(i_coarse,j_coarse) = fine_mass(i_coarse,j_coarse) + h_fine
