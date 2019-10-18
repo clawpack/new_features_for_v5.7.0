@@ -54,7 +54,7 @@ def setrun(claw_pkg='geoclaw'):
     #------------------------------------------------------------------
     
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('variable_sea_level', True)
+    probdata.add_param('variable_eta_init', True)
     
     use_force_dry = True
     probdata.add_param('use_force_dry', use_force_dry)
