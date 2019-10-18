@@ -26,7 +26,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     use qinit_module, only: force_dry,use_force_dry,mx_fdry, my_fdry
     use qinit_module, only: xlow_fdry, ylow_fdry, xhi_fdry, yhi_fdry
     use qinit_module, only: dx_fdry, dy_fdry
-    use qinit_module, only: t_stays_dry
+    use qinit_module, only: tend_force_dry
     
     implicit none
 
@@ -177,7 +177,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
         use_force_dry_this_level = (ddxy < 0.01d0*min(dx_fdry,dy_fdry))
         endif
         
-    !if (use_force_dry_this_level .and. (time <= t_stays_dry)) then
+    !if (use_force_dry_this_level .and. (time <= tend_force_dry)) then
     !    write(6,*) '+++ using force_dry in filval, t = ',time
     !    endif
     
@@ -231,7 +231,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
                        if (use_force_dry_this_level .and. &
                                (((coarseval(2) == vetac(i,j)) &
                                .and. (val(1,ifine,jfine) > 0)) &
-                               .or. (time <= t_stays_dry))) then
+                               .or. (time <= tend_force_dry))) then
                            ! check if in force_dry region
                            ii = int((x - xlow_fdry + 1d-7) / dx_fdry)
                            jj = int((y - ylow_fdry + 1d-7) / dy_fdry)

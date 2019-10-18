@@ -34,7 +34,7 @@ module qinit_module
     real(kind=8) :: xlow_fdry, ylow_fdry, xhi_fdry, yhi_fdry, dx_fdry, dy_fdry
     integer(kind=1), allocatable :: force_dry(:,:)
     logical :: use_force_dry
-    real(kind=8) :: t_stays_dry  ! always use mask up to this time
+    real(kind=8) :: tend_force_dry  ! always use mask up to this time
 
     ! to initialize using different initial eta values in different regions:
     integer :: etain_mx, etain_my
@@ -250,8 +250,8 @@ contains
         iunit = 8
     
         open(unit=iunit,file=fname,status='old',form='formatted')
-        !read(iunit,*) t_stays_dry
-        !write(6,*) 't_stays_dry = ',t_stays_dry
+        !read(iunit,*) tend_force_dry
+        !write(6,*) 'tend_force_dry = ',tend_force_dry
         read(iunit,*) mx_fdry
         read(iunit,*) my_fdry
         read(iunit,*) xlow_fdry

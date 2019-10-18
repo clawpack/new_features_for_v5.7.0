@@ -60,7 +60,7 @@ def setrun(claw_pkg='geoclaw'):
     probdata.add_param('use_force_dry', use_force_dry)
 
     if use_force_dry:
-        probdata.add_param('t_stays_dry', 15*60.)
+        probdata.add_param('tend_force_dry', 15*60.)
         fname = os.path.abspath('input_files/force_dry_init.data')
         probdata.add_param('fname_force_dry', fname)
 
@@ -148,8 +148,8 @@ def setrun(claw_pkg='geoclaw'):
 
     if clawdata.output_style==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.num_output_times = 9
-        clawdata.tfinal = 45 * 60.
+        clawdata.num_output_times = 1
+        clawdata.tfinal = 15 * 60.
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:

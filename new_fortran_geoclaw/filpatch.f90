@@ -26,7 +26,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     use qinit_module, only: force_dry,use_force_dry,mx_fdry, my_fdry
     use qinit_module, only: xlow_fdry, ylow_fdry, xhi_fdry, yhi_fdry
     use qinit_module, only: dx_fdry, dy_fdry
-    use qinit_module, only: t_stays_dry
+    use qinit_module, only: tend_force_dry
 
     implicit none
 
@@ -108,7 +108,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
         use_force_dry_this_level = (ddxy < 0.01d0*min(dx_fdry,dy_fdry))
         endif
 
-    !if (use_force_dry_this_level .and. (t <= t_stays_dry)) then
+    !if (use_force_dry_this_level .and. (t <= tend_force_dry)) then
     !    write(6,*) '+++ using force_dry in filval, t = ',t
     !    endif
             
@@ -337,7 +337,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
                     if (use_force_dry_this_level .and. &
                             (((eta_coarse(i_coarse,j_coarse) == veta_init_c) &
                             .and. (h_fine > 0)) &
-                            .or. (t <= t_stays_dry))) then
+                            .or. (t <= tend_force_dry))) then
                         ! check if in force_dry region
                         ii = int((x - xlow_fdry + 1d-7) / dx_fdry)
                         jj = int((y - ylow_fdry + 1d-7) / dy_fdry)
