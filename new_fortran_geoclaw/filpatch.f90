@@ -339,8 +339,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
                             .and. (h_fine > 0)) &
                             .or. (t <= tend_force_dry))) then
                         ! check if in force_dry region
-                        ii = int((x - xlow_fdry + 1d-7) / dx_fdry)
-                        jj = int((y - ylow_fdry + 1d-7) / dy_fdry)
+                        ii = int((x - xlow_fdry + 1d-7) / dx_fdry) + 1
+                        jj = int((y - ylow_fdry + 1d-7) / dy_fdry) + 1
                         jj = my_fdry - jj  ! since index 1 corresponds to north edge
                         if ((ii>=1) .and. (ii<=mx_fdry) .and. &
                             (jj>=1) .and. (jj<=my_fdry)) then
