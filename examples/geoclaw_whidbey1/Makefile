@@ -71,7 +71,6 @@ SOURCES = \
   $(NEWGEO)/fgmax_values.f90 \
   $(NEWGEO)/fgmax_frompatch.f90 \
   $(NEWGEO)/tick.f \
-  $(NEWGEO)/setprob.f90 \
   $(NEWGEO)/qinit.f90 \
   $(NEWGEO)/flag2refine2.f90 \
   $(CLAW)/riemann/src/rpn2_geoclaw.f \

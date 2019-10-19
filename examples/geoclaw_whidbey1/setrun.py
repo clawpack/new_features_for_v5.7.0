@@ -54,15 +54,15 @@ def setrun(claw_pkg='geoclaw'):
     #------------------------------------------------------------------
     
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
-    probdata.add_param('variable_eta_init', True)
+    #probdata.add_param('variable_eta_init', True)
     
-    use_force_dry = True
-    probdata.add_param('use_force_dry', use_force_dry)
+    #use_force_dry = True
+    #probdata.add_param('use_force_dry', use_force_dry)
 
-    if use_force_dry:
-        probdata.add_param('tend_force_dry', 15*60.)
-        fname = os.path.abspath('input_files/force_dry_init.data')
-        probdata.add_param('fname_force_dry', fname)
+    #if use_force_dry:
+    #    probdata.add_param('tend_force_dry', 15*60.)
+    #    fname = os.path.abspath('input_files/force_dry_init.data')
+    #    probdata.add_param('fname_force_dry', fname)
 
 
     #------------------------------------------------------------------
@@ -477,10 +477,22 @@ def setrun(claw_pkg='geoclaw'):
 
 
     # == setqinit.data values ==
+    
+    # for now need the new version of QinitData:
+    import data_Qinit  # eventually merge this into geoclaw.data
+    rundata.replace_data('qinit_data', data_Qinit.QinitData())
+    
     rundata.qinit_data.qinit_type = 0
     rundata.qinit_data.qinitfiles = []
     # for qinit perturbations, append lines of the form: (<= 1 allowed for now!)
     #   [minlev, maxlev, fname]
+    
+    rundata.qinit_data.variable_eta_init = True  # newly added to QinitData
+    
+    force_dry = data_Qinit.ForceDry()
+    force_dry.tend = 15*60.
+    force_dry.fname = 'input_files/force_dry_init.data'
+    rundata.qinit_data.force_dry_list.append(force_dry)
 
     # == fgmax.data values ==
     #fgmax_files = rundata.fgmax_data.fgmax_files

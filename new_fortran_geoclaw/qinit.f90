@@ -7,7 +7,7 @@ subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
     use qinit_module, only: dx_fdry, dy_fdry
     use geoclaw_module, only: sea_level
     use amr_module, only: t0
-    use topo_module, only: variable_eta_init
+    use qinit_module, only: variable_eta_init
     
     implicit none
     

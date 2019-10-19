@@ -22,7 +22,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
 
     use geoclaw_module, only: sea_level, dry_tolerance
     use topo_module, only: topo_finalized
-    use topo_module, only: variable_eta_init
+    use qinit_module, only: variable_eta_init
     use qinit_module, only: force_dry,use_force_dry,mx_fdry, my_fdry
     use qinit_module, only: xlow_fdry, ylow_fdry, xhi_fdry, yhi_fdry
     use qinit_module, only: dx_fdry, dy_fdry

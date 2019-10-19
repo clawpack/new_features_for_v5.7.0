@@ -22,7 +22,7 @@ subroutine filval(val, mitot, mjtot, dx, dy, level, time,  mic, &
     use topo_module, only: aux_finalized
     use geoclaw_module, only: dry_tolerance, sea_level
     use refinement_module, only: varRefTime
-    use topo_module, only: variable_eta_init
+    use qinit_module, only: variable_eta_init
     use qinit_module, only: force_dry,use_force_dry,mx_fdry, my_fdry
     use qinit_module, only: xlow_fdry, ylow_fdry, xhi_fdry, yhi_fdry
     use qinit_module, only: dx_fdry, dy_fdry

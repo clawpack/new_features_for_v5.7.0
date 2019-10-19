@@ -36,6 +36,8 @@ module qinit_module
     logical :: use_force_dry
     real(kind=8) :: tend_force_dry  ! always use mask up to this time
 
+    logical :: variable_eta_init
+
     ! to initialize using different initial eta values in different regions:
     integer :: etain_mx, etain_my
     real(kind=8) :: etain_dx, etain_dy
@@ -47,6 +49,7 @@ contains
     subroutine set_qinit(fname)
     
         use geoclaw_module, only: GEO_PARM_UNIT
+
     
         implicit none
         
@@ -56,6 +59,9 @@ contains
         ! File handling
         integer, parameter :: unit = 7
         character(len=150) :: qinit_fname
+        character(len=150) :: fname_force_dry
+
+        integer :: num_force_dry
         
         if (.not.module_setup) then
             write(GEO_PARM_UNIT,*) ' '
@@ -84,6 +90,27 @@ contains
             write(GEO_PARM_UNIT,*)  min_level_qinit, max_level_qinit, qinit_fname
             
             call read_qinit(qinit_fname)
+
+
+            ! If variable_eta_init then function set_eta_init is called
+            ! to set initial eta when interpolating onto newly refined patches
+            read(unit,*) variable_eta_init
+
+
+            
+            read(unit,*) num_force_dry
+            use_force_dry = (num_force_dry > 0)
+
+            if (num_force_dry > 1) then
+                write(6,*) '*** num_force_dry > 1 not yet implemented'
+                stop
+                endif
+
+            if (use_force_dry) then
+                read(unit,*) fname_force_dry
+                read(unit,*) tend_force_dry
+                call read_force_dry(trim(fname_force_dry))
+                endif
 
             module_setup = .true.
         end if

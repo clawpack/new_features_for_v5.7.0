@@ -65,7 +65,7 @@ module topo_module
     integer :: mtopo0size,mtopo0files
 
     ! New options read from setprob.data for now:
-    logical :: variable_eta_init
+    !logical :: variable_eta_init  # now in qinit_module
     real(kind=8) topo_missing
 
 contains
