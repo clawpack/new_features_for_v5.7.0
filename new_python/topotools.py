@@ -452,6 +452,31 @@ class Topography(object):
         #    self.read(path=path, topo_type=topo_type, unstructured=unstructured,
         #     mask=mask, filter_region=filter_region)
 
+    def set_xyZ(self, x, y, Z):
+        r"""
+        Set _x, _y, and _Z attributes and then generate X,Y,Z.
+        Shape of Z should be (len(y), len(x)).
+        """
+
+        if Z.shape != (len(y),len(x)):
+            raise ValueError("shape of Z should be (len(y), len(x))")
+
+        diffx = numpy.diff(x)
+        diffy = numpy.diff(y)
+        dx = numpy.mean(diffx)
+        dy = numpy.mean(diffy)
+        if diffx.max()-diffx.min() > 1e-3*dx:
+            raise ValueError("x must be equally spaced for structured topo")
+        if diffy.max()-diffy.min() > 1e-3*dy:
+            raise ValueError("y must be equally spaced for structured topo")
+
+        self.unstructured = False
+        self._x = x
+        self._y = y
+        self._Z = Z
+        self._X = None
+        self._Y = None
+        self.generate_2d_coordinates()
 
     def generate_2d_topo(self, mask=False):
         r"""Generate a 2d array of the topo."""
