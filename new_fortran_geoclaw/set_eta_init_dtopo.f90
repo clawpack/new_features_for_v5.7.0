@@ -1,7 +1,7 @@
 
 subroutine set_eta_init(mbc,mx,my,xlow,ylow,dx,dy,t,veta)
 
-    ! set variable eta_int in veta, based on input file
+    ! set variable eta_int in veta, based on dtopo subsidence or uplift.
     ! called by qinit and also by filpatch and filval when refining.
 
     use topo_module
@@ -72,10 +72,12 @@ subroutine set_eta_init(mbc,mx,my,xlow,ylow,dx,dy,t,veta)
                 jdtopo = max(1, min(mydtopo(m)-1, jdtopo))
                 ij = index0_dtopowork + (jdtopo-1)*mxdtopo(m) + idtopo-1
                 veta(i,j) = veta(i,j) + dtopowork(ij)
-                if (.false. .and.(x>-122.39).and.(x<-122.38).and.(y>47.76) &
-                     .and. (y<47.766)) then
+
+                ! print subsidence at location of interest for debugging:
+                if (.false. .and.(x>0.0).and.(x<0.0006).and.(y>0.0) &
+                     .and. (y<0.0006)) then
                        write(6,*) '+++ i,j,veta:', i,j,veta(i,j)
-                       write(6,*) '+++ idtopo,jdtopo,ij: ', idtopo,jdtopo,ij
+                       !write(6,*) '+++ idtopo,jdtopo,ij: ', idtopo,jdtopo,ij
                       endif
                 enddo
             enddo
