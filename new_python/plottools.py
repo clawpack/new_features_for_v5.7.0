@@ -70,8 +70,19 @@ def pcolorcells(X, Y, Z, ax=None, **kwargs):
         else:
             y = Y[0,:]                    
 
-    dx = x[1]-x[0]
-    dy = y[1]-y[0]
+    #dx = x[1]-x[0]
+    #dy = y[1]-y[0]
+    
+    diffx = np.diff(x)
+    diffy = np.diff(y)
+    dx = np.mean(diffx)
+    dy = np.mean(diffy)
+    
+    if diffx.max()-diffx.min() > 1e-3*dx:
+        raise ValueError("x must be equally spaced for pcolorcells")
+    if diffy.max()-diffy.min() > 1e-3*dy:
+        raise ValueError("y must be equally spaced for pcolorcells")
+
 
     if len(x) == Z.shape[1]:
         # cell centers, so xedge should be expanded by dx/2 on each end:
