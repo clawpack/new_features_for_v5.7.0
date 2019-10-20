@@ -81,21 +81,21 @@ contains
                 ! No perturbation specified
                 write(GEO_PARM_UNIT,*)  '  qinit_type = 0, no perturbation'
                 print *,'  qinit_type = 0, no perturbation'
-                return
-            endif
-            read(unit,*) qinit_fname
-            read(unit,"(2i2)") min_level_qinit, max_level_qinit
+            else
+                read(unit,*) qinit_fname
+                read(unit,"(2i2)") min_level_qinit, max_level_qinit
 
-            write(GEO_PARM_UNIT,*) '   min_level, max_level, qinit_fname:'
-            write(GEO_PARM_UNIT,*)  min_level_qinit, max_level_qinit, qinit_fname
+                write(GEO_PARM_UNIT,*) '   min_level, max_level, qinit_fname:'
+                write(GEO_PARM_UNIT,*)  min_level_qinit, max_level_qinit, &
+                                        qinit_fname
             
-            call read_qinit(qinit_fname)
+                call read_qinit(qinit_fname)
+            endif
 
 
             ! If variable_eta_init then function set_eta_init is called
             ! to set initial eta when interpolating onto newly refined patches
             read(unit,*) variable_eta_init
-
 
             
             read(unit,*) num_force_dry
