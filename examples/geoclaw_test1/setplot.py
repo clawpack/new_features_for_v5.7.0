@@ -27,10 +27,10 @@ new_code = '../../new_python'
 print('Adding %s to path' % new_code)
 sys.path.insert(0, new_code)
 
-cmax = 8.
+cmax = 0.5
 cmin = -cmax
 
-cmax_land = 40.
+cmax_land = 2.
 
 #--------------------------
 def setplot(plotdata=None):
@@ -85,15 +85,6 @@ def setplot(plotdata=None):
     plotaxes.title = 'Surface'
     plotaxes.scaled = True
 
-    def fixup(current_data):
-        import pylab
-        #addgauges(current_data)
-        t = current_data.t
-        t = t / 60.  # minutes
-        pylab.title('Surface at %4.2f minutes' % t, fontsize=10)
-        #pylab.xticks(fontsize=15)
-        #pylab.yticks(fontsize=15)
-    #plotaxes.afteraxes = fixup
 
     def aa(current_data):
         from pylab import ticklabel_format, xticks, gca, cos, pi, savefig
@@ -102,21 +93,8 @@ def setplot(plotdata=None):
         ticklabel_format(useOffset=False)
         xticks(rotation=20)
 
-    def aa_topo(current_data):
-        from pylab import contour, plot
-        aa(current_data)
-        #addgauges(current_data)
-        #contour(topo.X, topo.Y, topo.Z, [0], colors='k')
 
-    def aa_topo_nogauges(current_data):
-        from pylab import contour, plot
-        aa(current_data)
-        #addgauges(current_data)
-        #contour(topo.X, topo.Y, topo.Z, [0], colors='k')
-
-
-    #plotaxes.afteraxes = aa_topo
-    plotaxes.afteraxes = aa_topo_nogauges
+    plotaxes.afteraxes = aa
 
 
     # Water
@@ -169,7 +147,13 @@ def setplot(plotdata=None):
     plotaxes.xlimits = [x1-0.01, x2+0.01]
     plotaxes.ylimits = [y1-0.01, y2+0.01]
 
-    plotaxes.afteraxes = aa_topo
+    def aa_withbox(current_data):
+        from pylab import plot
+        x1,x2,y1,y2 = (-0.009259, 0.013796, -0.005093, 0.005000)
+        plot([x1,x1,x2,x2,x1], [y1,y2,y2,y1,y1], 'k')
+        aa(current_data)
+        
+    plotaxes.afteraxes = aa_withbox
 
     # Water
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
@@ -192,160 +176,6 @@ def setplot(plotdata=None):
     plotitem.amr_celledges_show = [0]
     plotitem.patchedges_show = 0
 
-
-    #-----------------------------------------
-    # Figures for gauges
-    #-----------------------------------------
-    
-    time_scale = 1./3600.
-    time_label = 'hours'
-    
-    plotfigure = plotdata.new_plotfigure(name='gauge depth', figno=300, \
-                    type='each_gauge')
-    #plotfigure.clf_each_gauge = False
-
-    def setglimits_depth(current_data):
-        from pylab import xlim,ylim,title,argmax,show,array,ylabel
-        gaugeno = current_data.gaugeno
-        q = current_data.q
-        depth = q[0,:]
-        t = current_data.t
-        g = current_data.plotdata.getgauge(gaugeno)
-        level = g.level
-        maxlevel = max(level)
-
-        #find first occurrence of the max of levels used by
-        #this gauge and set the limits based on that time
-        argmax_level = argmax(level)
-        xlim(time_scale*array(t[argmax_level],t[-1]))
-        ylabel('meters')
-        min_depth = depth[argmax_level:].min()
-        max_depth = depth[argmax_level:].max()
-        ylim(min_depth-0.5, max_depth+0.5)
-        title('Gauge %i : Flow Depth (h)\n' % gaugeno + \
-              'max(h) = %7.3f,    max(level) = %i' %(max_depth,maxlevel))    
-        #show()
-
-    # Set up for axes in this figure:
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.time_scale = time_scale
-    plotaxes.time_label = time_label
-
-    # Plot depth as blue curve:
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = 0
-    plotitem.plotstyle = 'b-'
-
-    ## Set the limits and the title in the function below
-    plotaxes.afteraxes = setglimits_depth
-
-    plotfigure = plotdata.new_plotfigure(name='gauge surface eta', figno=301, \
-                    type='each_gauge')
-    #plotfigure.clf_each_gauge = False
-
-    def setglimits_eta(current_data):
-        from pylab import xlim,ylim,title,argmax,show,array,ylabel
-        gaugeno = current_data.gaugeno
-        q = current_data.q
-        eta = q[3,:]
-        t = current_data.t
-        g = current_data.plotdata.getgauge(gaugeno)
-        level = g.level
-        maxlevel = max(level)
-
-        #find first occurrence of the max of levels used by
-        #this gauge and set the limits based on that time
-        argmax_level = argmax(level) #first occurrence of it
-        xlim(time_scale*array(t[argmax_level],t[-1]))
-        ylabel('meters')
-        min_eta = eta[argmax_level:].min()
-        max_eta = eta[argmax_level:].max()
-        ylim(min_eta-0.5,max_eta+0.5)
-        title('Gauge %i : Surface Elevation (eta)\n' % gaugeno + \
-              'max(eta) = %7.3f,    max(level) = %i' %(max_eta,maxlevel))
-        #show()
-
-    # Set up for axes in this figure:
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.time_scale = time_scale
-    plotaxes.time_label = time_label
-    
-    # Plot surface (eta) as blue curve:
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = 3
-    plotitem.plotstyle = 'b-'
-
-    ## Set the limits and the title in the function below
-    plotaxes.afteraxes = setglimits_eta
-
-    plotfigure = plotdata.new_plotfigure(name='speed', figno=302, \
-                    type='each_gauge')
-    #plotfigure.clf_each_gauge = False
-
-    def speed(current_data):
-        from numpy import sqrt, maximum, where
-        q   = current_data.q
-        h   = q[0,:]
-        hu  = q[1,:]
-        hv  = q[2,:]
-        s   = sqrt(hu**2 + hv**2) / maximum(h,0.001)
-        s   = where(h > 0.001, s, 0.0)
-        return s
-
-    def setglimits_speed(current_data):
-        from pylab import xlim,ylim,title,argmax,show,array,ylabel
-        gaugeno = current_data.gaugeno
-        s = speed(current_data)
-        t = current_data.t
-        g = current_data.plotdata.getgauge(gaugeno)
-        level = g.level
-        maxlevel = max(level)
-
-        #find first occurrence of the max of levels used by
-        #this gauge and set the limits based on that time
-        argmax_level = argmax(level) #first occurrence of it
-        xlim(time_scale*array(t[argmax_level],t[-1]))
-        ylabel('meters/sec')
-        min_speed = s[argmax_level:].min()
-        max_speed = s[argmax_level:].max()
-        ylim(min_speed-0.5,max_speed+0.5)
-        title('Gauge %i : Speed (s)\n' % gaugeno + \
-              'max(s) = %7.3f,    max(level) = %i' %(max_speed,maxlevel))
-        #show()
-
-    # Set up for axes in this figure:
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.time_scale = time_scale
-    plotaxes.time_label = time_label
-
-    # Plot speed (s) as blue curve:
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-    plotitem.plot_var = speed
-    plotitem.plotstyle = 'b-'
-
-    ## Set the limits and the title in the function below
-    plotaxes.afteraxes = setglimits_speed
-
-
-    #-----------------------------------------
-    # Figures for fgmax plots
-    #-----------------------------------------
-    # Note: need to move fgmax png files into _plots after creating with
-    #   python run_process_fgmax.py
-    # This just creates the links to these figures...
-
-    if 0:
-        ### Putting them in _other_figures with the proper name as a link
-        ### Can run process fgmax either before or after setplot now.
-        otherfigure = plotdata.new_otherfigure(name='max depth',
-                        fname='_other_figures/%s_%s_h_onshore.png' \
-                                % (params.loc,params.event))
-        otherfigure = plotdata.new_otherfigure(name='max depth on GE image',
-                        fname='_other_figures/%s_%s_h_onshore_GE.png' \
-                                % (params.loc,params.event))
-        otherfigure = plotdata.new_otherfigure(name='max speed',
-                        fname='_other_figures/%s_%s_speed.png' \
-                                % (params.loc,params.event))
 
     # Plots of timing (CPU and wall time):
 

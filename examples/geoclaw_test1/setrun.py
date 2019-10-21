@@ -140,8 +140,8 @@ def setrun(claw_pkg='geoclaw'):
 
     if clawdata.output_style==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.num_output_times = 3
-        clawdata.tfinal = 15.
+        clawdata.num_output_times = 15
+        clawdata.tfinal = 30*60.
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -384,7 +384,7 @@ def setrun(claw_pkg='geoclaw'):
     flagregion.name = 'Region_level4'
     flagregion.minlevel = 4
     flagregion.maxlevel = 4
-    flagregion.t1 = 5.
+    flagregion.t1 = 5*60.
     flagregion.t2 = 1e9
     flagregion.spatial_region_type = 1  # Rectangle
     # domain plus a bit so kml files look nicer:
@@ -462,9 +462,9 @@ def setrun(claw_pkg='geoclaw'):
     
     rundata.qinit_data.variable_eta_init = True  # newly added to QinitData
     
-    if 0:
+    if 1:
         force_dry = data_Qinit.ForceDry()
-        force_dry.tend = 15*60.
+        force_dry.tend = 7*60.
         force_dry.fname = 'input_files/force_dry_init.data'
         rundata.qinit_data.force_dry_list.append(force_dry)
 
