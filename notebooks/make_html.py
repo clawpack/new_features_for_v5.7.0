@@ -9,7 +9,7 @@ if 0:
     notebook_files = glob.glob('*.ipynb')
     all_notebooks = [os.path.splitext(f)[0] for f in notebook_files]
 
-if 1:
+if 0:
     all_notebooks = ['Index', 
         'pcolorcells', 
         'NewFeatures', 
@@ -21,7 +21,7 @@ if 1:
         'RuledRectangles', 
         'SetEtaInit']
 
-if 0:
-    all_notebooks = ['ForceDry']
+if 1:
+    all_notebooks = ['Index']
     
 make_html(all_notebooks, run_notebooks=run_notebooks)

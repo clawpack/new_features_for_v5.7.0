@@ -37,8 +37,9 @@ def make_html(all_notebooks='all', run_notebooks=True):
         print('Fixing %s' % file)
         with open(file,'w') as outfile:
             for line in lines:
-                for notebook_name in all_notebooks:
-                    line = re.sub(notebook_name+'.ipynb', notebook_name+'.html', line)
+                #for notebook_name in all_notebooks:
+                #    line = re.sub(notebook_name+'.ipynb', notebook_name+'.html', line)
+                line = re.sub('.ipynb', '.html', line)
                 outfile.write(line)
 
 
