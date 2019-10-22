@@ -151,7 +151,7 @@ def select_by_flooding(Ztopo, mask=None, prev_pts_chosen=None,
         new_set_next_j = []  # for the next iteration
         for (i,j) in zip(set_next_i,set_next_j):
             for (ii,jj) in [(i-1,j),(i+1,j),(i,j-1),(i,j+1)]:
-                if (ii>0) and (ii<maxi) and (jj>0) and (jj<maxj):
+                if (ii>=0) and (ii<=maxi) and (jj>=0) and (jj<=maxj):
                     if increasing:
                         cond1 = (Ztopo[ii,jj] < Z2)
                     else:
