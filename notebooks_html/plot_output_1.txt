@@ -1,0 +1,82 @@
+rm -f .plots
+python /Users/rjl/git/clawpack/visclaw/src/python/visclaw/plotclaw.py _output_1 _plots_1 setplot.py           
+/Users/rjl/miniconda/envs/geo/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Importing setplot.setplot from /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1.
+Adding ../../new_python to path
+Adding ../../new_python to path
+Executed setplot successfully
+    Reading  Frame 3 at t = 900  from outdir = /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_output_1
+Creating png for Frame 3
+/Users/rjl/miniconda/envs/geo/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Importing setplot.setplot from /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1.
+Adding ../../new_python to path
+Adding ../../new_python to path
+Executed setplot successfully
+    Reading  Frame 2 at t = 600  from outdir = /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_output_1
+Creating png for Frame 2
+/Users/rjl/miniconda/envs/geo/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Importing setplot.setplot from /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1.
+Adding ../../new_python to path
+Adding ../../new_python to path
+Executed setplot successfully
+    Reading  Frame 0 at t = 0  from outdir = /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_output_1
+Creating png for Frame 0
+    Reading  Frame 4 at t = 1200  from outdir = /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_output_1
+Creating png for Frame 4
+/Users/rjl/miniconda/envs/geo/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Importing setplot.setplot from /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1.
+Adding ../../new_python to path
+Adding ../../new_python to path
+Executed setplot successfully
+    Reading  Frame 1 at t = 300  from outdir = /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_output_1
+Creating png for Frame 1
+    Reading  Frame 5 at t = 1500  from outdir = /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_output_1
+Creating png for Frame 5
+/Users/rjl/miniconda/envs/geo/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Importing setplot.setplot from /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1.
+Adding ../../new_python to path
+Adding ../../new_python to path
+Executed setplot successfully
+Will plot 6 frames numbered: [0, 1, 2, 3, 4, 5]
+Will make 2 figure(s) for each frame, numbered:  [0, 11]
+
+-----------------------------------
+
+
+Creating html pages for figures...
+
+Directory '/Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1' 
+    already exists, files may be overwritten 
+Created /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/_timing_figures/timing_CumCellUpdates.png
+Created /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/_timing_figures/timing_CumCPUTime.png
+Created /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/_timing_figures/timing_CumWallTime.png
+Created /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/_timing_figures/timing_ByFrameCellUpdates.png
+Created /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/_timing_figures/timing_ByFrameCPUTime.png
+Created /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/_timing_figures/timing_ByFrameWallTime.png
+Created /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/_timing_figures/timing_ByFrameCellUpdatesPerCPU.png
+Created /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/_timing_figures/timing.html
+Now making png files for all figures...
+
+
+-----------------------------------
+
+Creating latex file...
+Directory '/Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1' 
+    already exists, files may be overwritten 
+
+Latex file created:  
+  /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/plots.tex
+
+Use pdflatex to create pdf file
+Created JSAnimation for figure 0
+Created JSAnimation for figure 11
+
+--------------------------------------------------------
+
+Point your browser to:
+    file:///Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_plots_1/_PlotIndex.html

@@ -1,0 +1,205 @@
+rm -f .output
+python /Users/rjl/git/clawpack/clawutil/src/python/clawutil/runclaw.py xgeoclaw                       _output_1 \
+	True None . False False None
+Reading data file: claw.data
+         first 5 lines are comments and will be skipped
+Reading data file: amr.data
+         first 5 lines are comments and will be skipped
+  
+ Running amrclaw ...  
+  
+Reading data file: geoclaw.data
+         first 5 lines are comments and will be skipped
+Reading data file: refinement.data
+         first 5 lines are comments and will be skipped
+Reading data file: dtopo.data
+         first 5 lines are comments and will be skipped
+Reading data file: topo.data
+         first 5 lines are comments and will be skipped
+  
+ Reading topography file  /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/input_files/topo_ocean.tt3                                                     
+  
+ Reading topography file  /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/input_files/topo_shore.tt3                                                     
+Reading data file: qinit.data
+         first 5 lines are comments and will be skipped
+   qinit_type = 0, no perturbation
+Reading data file: fixed_grids.data
+         first 5 lines are comments and will be skipped
+Reading data file: friction.data
+         first 5 lines are comments and will be skipped
+Reading data file: multilayer.data
+         first 5 lines are comments and will be skipped
+Reading data file: surge.data
+         first 5 lines are comments and will be skipped
+Reading data file: regions.data
+         first 5 lines are comments and will be skipped
+Reading data file: flagregions.data
+         first 5 lines are comments and will be skipped
+ +++ rregion bounding box: 
+  -2.0000462962962962       0.19995370370370372       -2.0000462962962962        1.9999537037037036     
+ +++ i, rr%s(1), rr%ds:            1  -2.0000462962962962        2.1999999999999997     
+ +++ rregion bounding box: 
+ -0.10000000000000001       0.10000000000000001      -0.10000000000000001       0.10000000000000001     
+ +++ i, rr%s(1), rr%ds:            2 -0.10000000000000001       0.20000000000000001     
+ +++ rregion bounding box: 
+  -5.0000000000000001E-003   1.0000000000000000E-002  -1.0999999999999999E-002   1.0999999999999999E-002
+ +++ i, rr%s(1), rr%ds:            3  -5.0000000000000001E-003   1.4999999999999999E-002
+Reading data file: gauges.data
+         first 5 lines are comments and will be skipped
+Reading data file: fgmax.data
+         first 5 lines are comments and will be skipped
+Reading data file: adjoint.data
+         first 5 lines are comments and will be skipped
+ rnode allocated...
+ node allocated...
+ listOfGrids allocated...
+ Storage allocated...
+ bndList allocated...
+there are    6 grids with     6840 cells at level   1
+   Setting initial dt to   0.20000000000000001     
+  max threads set to            4
+  
+ Done reading data, starting computation ...  
+  
+ Total mass at initial time:    165193673351225.62     
+AMRCLAW: Frame    0 output files done at time t =  0.000000D+00
+
+ AMRCLAW: level  1  CFL = .927E-02  dt = 0.2000E+00  final t = 0.200000E+00
+ AMRCLAW: level  1  CFL = .463E-01  dt = 0.1000E+01  final t = 0.120000E+01
+ AMRCLAW: level  1  CFL = .463E-01  dt = 0.1000E+01  final t = 0.220000E+01
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.194654E+02
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.367308E+02
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.539966E+02
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.712623E+02
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.885280E+02
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.105794E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.123060E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.140325E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.157591E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.174857E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.192122E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.209388E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.226654E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.243920E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.261185E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.278451E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.295717E+03
+ AMRCLAW: level  1  CFL = .198E+00  dt = 0.4283E+01  final t = 0.300000E+03
+AMRCLAW: Frame    1 output files done at time t =  0.300000D+03
+
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.317266E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.334531E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.351797E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.369063E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.386329E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.403594E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.420860E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.438126E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.455392E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.472657E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.489923E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.507189E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.524455E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.541720E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.558986E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.576252E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.593518E+03
+ AMRCLAW: level  1  CFL = .300E+00  dt = 0.6482E+01  final t = 0.600000E+03
+AMRCLAW: Frame    2 output files done at time t =  0.600000D+03
+
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.617266E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.634531E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.651797E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.669063E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.686329E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.703594E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.720860E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.738126E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.755392E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.772657E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.789923E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.807189E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.824455E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.841720E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.858986E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.876252E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.893517E+03
+ AMRCLAW: level  1  CFL = .300E+00  dt = 0.6483E+01  final t = 0.900000E+03
+AMRCLAW: Frame    3 output files done at time t =  0.900000D+03
+
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.917266E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.934531E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.951797E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.969063E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.986329E+03
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.100359E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.102086E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.103813E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.105539E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.107266E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.108992E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.110719E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.112445E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.114172E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.115898E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.117625E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.119351E+04
+ AMRCLAW: level  1  CFL = .301E+00  dt = 0.6486E+01  final t = 0.120000E+04
+AMRCLAW: Frame    4 output files done at time t =  0.120000D+04
+
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.121727E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.123453E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.125180E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.126906E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.128633E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.130359E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.132086E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.133812E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.135539E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.137265E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.138992E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.140718E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.142445E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.144171E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.145898E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.147624E+04
+ AMRCLAW: level  1  CFL = .800E+00  dt = 0.1727E+02  final t = 0.149351E+04
+ AMRCLAW: level  1  CFL = .301E+00  dt = 0.6492E+01  final t = 0.150000E+04
+AMRCLAW: Frame    5 output files done at time t =  0.150000D+04
+
+ Done integrating to time    1500.0000000000000     
+
+============================== Timing Data ==============================
+
+Integration Time (stepgrid + BC + overhead)
+Level           Wall Time (seconds)    CPU Time (seconds)   Total Cell Updates
+  1                     0.277                  0.974            0.636E+06
+  2                     1.788                  6.316            0.490E+07
+  3                    23.829                 91.662            0.697E+08
+  4                    23.108                 85.086            0.804E+08
+total                  49.003                184.038            0.156E+09
+
+All levels:
+stepgrid               48.071                181.089    
+BC/ghost cells          0.857                  2.862
+Regridding              0.776                  2.489  
+Output (valout)         0.064                  0.038  
+
+Total time:            50.180                187.330  
+Using  4 thread(s)
+
+Note: The CPU times are summed over all threads.
+      Total time includes more than the subroutines listed above
+Note: timings are also recorded for each output step
+      in the file timing.csv.
+
+=========================================================================
+
+==> runclaw: Will take data from  /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1
+==> runclaw: Will write output to  /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_output_1
+==> runclaw: Removing all old fort/gauge files in  /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_output_1
+
+==> Running with command:
+    /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/xgeoclaw
+==> runclaw: Done executing /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/xgeoclaw via clawutil.runclaw.py
+==> runclaw: Output is in  /Users/rjl/git/clawpack/new_features_for_v5.7.0/examples/geoclaw_test1/_output_1
