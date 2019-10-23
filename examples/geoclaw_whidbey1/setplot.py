@@ -355,12 +355,12 @@ def setplot(plotdata=None):
 
     def make_timing_plots(plotdata):
         import os
-        import plot_timing_stats2
+        from clawpack.visclaw import plot_timing_stats
         try:
             timing_plotdir = plotdata.plotdir + '/_timing_figures'
             os.system('mkdir -p %s' % timing_plotdir)
             units = {'comptime':'hours', 'simtime':'hours', 'cell':'billions'}
-            plot_timing_stats2.make_plots(outdir=plotdata.outdir, make_pngs=True,
+            plot_timing_stats.make_plots(outdir=plotdata.outdir, make_pngs=True,
                                           plotdir=timing_plotdir, units=units)
             os.system('cp %s/timing.* %s' % (plotdata.outdir, timing_plotdir))
         except:
