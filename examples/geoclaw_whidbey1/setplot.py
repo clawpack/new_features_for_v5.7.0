@@ -27,10 +27,10 @@ new_code = '../../new_python'
 print('Adding %s to path' % new_code)
 sys.path.insert(0, new_code)
 
-cmax = 1.
+cmax = 2.
 cmin = -cmax
 
-cmax_land = 40.
+cmax_land = 20.
 
 #--------------------------
 def setplot(plotdata=None):

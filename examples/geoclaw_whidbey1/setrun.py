@@ -148,8 +148,8 @@ def setrun(claw_pkg='geoclaw'):
 
     if clawdata.output_style==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.num_output_times = 1
-        clawdata.tfinal = 15 * 60.
+        clawdata.num_output_times = 15
+        clawdata.tfinal = 45*60.
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -388,6 +388,16 @@ def setrun(claw_pkg='geoclaw'):
                                  clawdata.upper[0] + 0.1,
                                  clawdata.lower[1] - 0.1,
                                  clawdata.upper[1] + 0.1]
+    flagregions.append(flagregion)
+
+    flagregion = data_FlagRegions.FlagRegion(num_dim=2)
+    flagregion.name = 'Region_source'
+    flagregion.minlevel = 2
+    flagregion.maxlevel = 3
+    flagregion.t1 = 0.
+    flagregion.t2 = 1e9
+    flagregion.spatial_region_type = 1  # Rectangle
+    flagregion.spatial_region = [-122.6, -122.3, 47.4, 47.9]
     flagregions.append(flagregion)
 
     flagregion = data_FlagRegions.FlagRegion(num_dim=2)
