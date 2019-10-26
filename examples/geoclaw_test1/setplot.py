@@ -105,6 +105,7 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmin = cmin
     plotitem.pcolor_cmax = cmax
     plotitem.add_colorbar = True
+    plotitem.colorbar_shrink = 0.7
     plotitem.amr_celledges_show = [0,0,0]
     plotitem.amr_patchedges_show = [0,0,0,0]
     plotitem.amr_data_show = [1,1,1,1,1,0,0]
@@ -134,7 +135,7 @@ def setplot(plotdata=None):
     #-----------------------------------------
     # Figure for coastal area
     #-----------------------------------------
-    x1,x2,y1,y2 = [-0.004, 0.01, -0.01, 0.01]
+    x1,x2,y1,y2 = [-0.005, 0.016, -0.01, 0.01]
 
     plotfigure = plotdata.new_plotfigure(name="coastal area", figno=11)
     plotfigure.show = True
@@ -144,25 +145,27 @@ def setplot(plotdata=None):
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.scaled = False
 
-    plotaxes.xlimits = [x1-0.01, x2+0.01]
-    plotaxes.ylimits = [y1-0.01, y2+0.01]
+    plotaxes.xlimits = [x1, x2]
+    plotaxes.ylimits = [y1, y2]
 
     def aa_withbox(current_data):
         from pylab import plot
         x1,x2,y1,y2 = (-0.009259, 0.013796, -0.005093, 0.005000)
-        plot([x1,x1,x2,x2,x1], [y1,y2,y2,y1,y1], 'k')
+        if current_data.t > 5*60.:
+            plot([x1,x1,x2,x2,x1], [y1,y2,y2,y1,y1], 'w--')
         aa(current_data)
         
     plotaxes.afteraxes = aa_withbox
 
     # Water
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
-    #plotitem.plot_var = geoplot.surface
-    plotitem.plot_var = geoplot.surface_or_depth
+    plotitem.plot_var = geoplot.surface
+    #plotitem.plot_var = geoplot.surface_or_depth
     plotitem.pcolor_cmap = geoplot.tsunami_colormap
     plotitem.pcolor_cmin = cmin
     plotitem.pcolor_cmax = cmax
     plotitem.add_colorbar = True
+    plotitem.colorbar_shrink = 0.4
     plotitem.amr_celledges_show = [0,0,0]
     plotitem.patchedges_show = 0
 
@@ -176,17 +179,29 @@ def setplot(plotdata=None):
     plotitem.amr_celledges_show = [0]
     plotitem.patchedges_show = 0
 
+    # add contour lines of bathy if desired:
+    plotitem = plotaxes.new_plotitem(plot_type='2d_contour')
+    #plotitem.show = False
+    plotitem.plot_var = geoplot.topo
+    plotitem.contour_levels = [-2,-1,0,1,2]
+    plotitem.amr_contour_colors = ['yellow']  # color on each level
+    plotitem.kwargs = {'linestyles':'solid','linewidths':1}
+    plotitem.amr_contour_show = [0,0,1,0]
+    plotitem.celledges_show = 0
+    plotitem.patchedges_show = 0
+
+
 
     # Plots of timing (CPU and wall time):
 
     def make_timing_plots(plotdata):
         import os
-        import plot_timing_stats2
+        from clawpack.visclaw import plot_timing_stats
         try:
             timing_plotdir = plotdata.plotdir + '/_timing_figures'
             os.system('mkdir -p %s' % timing_plotdir)
             units = {'comptime':'hours', 'simtime':'hours', 'cell':'billions'}
-            plot_timing_stats2.make_plots(outdir=plotdata.outdir, make_pngs=True,
+            plot_timing_stats.make_plots(outdir=plotdata.outdir, make_pngs=True,
                                           plotdir=timing_plotdir, units=units)
             os.system('cp %s/timing.* %s' % (plotdata.outdir, timing_plotdir))
         except:
