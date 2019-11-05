@@ -40,7 +40,6 @@ class QinitData(clawpack.clawutil.data.ClawData):
 
     def write(self,data_source='setrun.py', out_file='qinit.data'):
 
-        print('+++ qinit.variable_eta_init = ', self.variable_eta_init)
         # Initial perturbation
         self.open_data_file(out_file, data_source)
         self.data_write('qinit_type')
