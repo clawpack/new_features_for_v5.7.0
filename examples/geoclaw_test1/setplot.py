@@ -17,12 +17,6 @@ from six.moves import range
 import os,sys
 
 
-try:
-    root_dir = os.environ['WA_EMD_2019']
-except:
-    print("*** Need to set environment variable WA_EMD_2019")
-    sys.exit()
-
 new_code = '../../new_python'
 print('Adding %s to path' % new_code)
 sys.path.insert(0, new_code)
