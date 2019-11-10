@@ -480,8 +480,7 @@ def setrun(claw_pkg='geoclaw'):
     # for moving topography, append lines of the form :   (<= 1 allowed for now!)
     #   [topotype, minlevel,maxlevel,fname]
     dtopodir = 'input_files'
-    dtopo_data.dtopofiles.append([3, 2, 2, \
-            dtopodir + '/seattlefault_uniform.tt3'])
+    dtopo_data.dtopofiles.append([3, 2, 2, dtopodir + '/SFL.tt3'])
 
     dtopo_data.dt_max_dtopo = 1.0
 
