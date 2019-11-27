@@ -158,7 +158,7 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmax = cmax
     plotitem.add_colorbar = True
     plotitem.amr_celledges_show = [0,0,0]
-    plotitem.amr_patchedges_show = [0,0,0,0]
+    plotitem.amr_patchedges_show = [0,1,0,0]
     plotitem.amr_data_show = [1,1,1,1,1,0,0]
 
     # Land
@@ -179,7 +179,7 @@ def setplot(plotdata=None):
     plotitem.contour_levels = [sea_level]
     plotitem.amr_contour_colors = ['g']  # color on each level
     plotitem.kwargs = {'linestyles':'solid','linewidths':0.5}
-    plotitem.amr_contour_show = [0,0,0,1]  # only on finest level
+    plotitem.amr_contour_show = [0,1,0,0]  # only on finest level
     plotitem.celledges_show = 0
     plotitem.patchedges_show = 0
 

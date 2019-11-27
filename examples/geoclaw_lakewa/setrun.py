@@ -101,9 +101,9 @@ def setrun(claw_pkg='geoclaw'):
     clawdata.lower[1] = 47.45 - arcsec16      # south latitude
     clawdata.upper[1] = 47.8 - arcsec16        # north latitude
 
-    # choose mx and my so coarsest grid has 30 arcsecond resolution:
-    clawdata.num_cells[0] = 27
-    clawdata.num_cells[1] = 42
+    # choose mx and my so coarsest grid has 2 arcsecond resolution:
+    clawdata.num_cells[0] = 27*15
+    clawdata.num_cells[1] = 42*15
 
 
     # ---------------
@@ -304,13 +304,13 @@ def setrun(claw_pkg='geoclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 4
+    amrdata.amr_levels_max = 2
 
     # List of refinement ratios at each level (length at least mxnest-1)
-    # dx = dy = 30", 10", 2", 1/3":
-    amrdata.refinement_ratios_x = [3,5,6]
-    amrdata.refinement_ratios_y = [3,5,6]
-    amrdata.refinement_ratios_t = [3,5,6]
+    # dx = dy = 2", 1/3":
+    amrdata.refinement_ratios_x = [6]
+    amrdata.refinement_ratios_y = [6]
+    amrdata.refinement_ratios_t = [6]
 
 
 
@@ -326,11 +326,11 @@ def setrun(claw_pkg='geoclaw'):
     amrdata.flag2refine = True
 
     # steps to take on each level L between regriddings of level L+1:
-    amrdata.regrid_interval = 3
+    amrdata.regrid_interval = 3000000
 
     # width of buffer zone around flagged points:
     # (typically the same as regrid_interval so waves don't escape):
-    amrdata.regrid_buffer_width  = 2
+    amrdata.regrid_buffer_width  = 0
 
     # clustering alg. cutoff for (# flagged pts) / (total # of cells refined)
     # (closer to 1.0 => more small grids may be needed to cover flagged cells)
@@ -380,7 +380,7 @@ def setrun(claw_pkg='geoclaw'):
     flagregion = data_FlagRegions.FlagRegion(num_dim=2)
     flagregion.name = 'Region_domain'
     flagregion.minlevel = 1
-    flagregion.maxlevel = 3
+    flagregion.maxlevel = 1
     flagregion.t1 = 0.
     flagregion.t2 = 1e9
     flagregion.spatial_region_type = 1  # Rectangle
@@ -394,13 +394,13 @@ def setrun(claw_pkg='geoclaw'):
     # refine Lake WA:
     flagregion = data_FlagRegions.FlagRegion(num_dim=2)
     flagregion.name = 'Region_lake'
-    flagregion.minlevel = 3
-    flagregion.maxlevel = 4
+    flagregion.minlevel = 2
+    flagregion.maxlevel = 2
     flagregion.t1 = 0.
     flagregion.t2 = 1e9
     flagregion.spatial_region_type = 2  # Ruled Rectangle
     flagregion.spatial_region_file = \
-        os.path.abspath('input_files/RuledRectangle_Lake.data')
+        os.path.abspath('input_files/RuledRectangle_LakeWA.data')
     flagregions.append(flagregion)
 
     # ---------------
@@ -441,7 +441,7 @@ def setrun(claw_pkg='geoclaw'):
     # Refinement settings
     refinement_data = rundata.refinement_data
     refinement_data.variable_dt_refinement_ratios = True
-    refinement_data.wave_tolerance = 0.05
+    refinement_data.wave_tolerance = 100 #0.05
     refinement_data.deep_depth = 1e2
     refinement_data.max_level_deep = 30
 
@@ -502,7 +502,7 @@ def setrun(claw_pkg='geoclaw'):
         fg.point_style = 4       # scattered points
         fg.npts = 0
 
-        fg.xy_fname = os.path.abspath('input_files/fgmax_pts_whidbey1.data')
+        fg.xy_fname = os.path.abspath('input_files/fgmax_pts_LakeWA.data')
 
         # monitor fgmax points only on finest level:
         fg.min_level_check = amrdata.amr_levels_max 
