@@ -148,8 +148,8 @@ def setrun(claw_pkg='geoclaw'):
 
     if clawdata.output_style==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.num_output_times = 20
-        clawdata.tfinal = 10*60.
+        clawdata.num_output_times = 2 #20
+        clawdata.tfinal = 60.  #10*60.
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -278,7 +278,7 @@ def setrun(claw_pkg='geoclaw'):
     # so that at most 2 checkpoint files exist at any time, useful when
     # doing frequent checkpoints of large problems.
 
-    clawdata.checkpt_style = -2
+    clawdata.checkpt_style = 0
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
@@ -304,7 +304,7 @@ def setrun(claw_pkg='geoclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 2
+    amrdata.amr_levels_max = 1
 
     # List of refinement ratios at each level (length at least mxnest-1)
     # dx = dy = 2", 1/3":
@@ -489,11 +489,11 @@ def setrun(claw_pkg='geoclaw'):
     #fgmax_files = rundata.fgmax_data.fgmax_files
     # for fixed grids append to this list names of any fgmax input files
 
-    rundata.fgmax_data.num_fgmax_val = 5  # Save depth and speed
+    rundata.fgmax_data.num_fgmax_val = 2  # Save depth and speed
 
     rundata.fgmax_data.fgmax_files = fgmax_files = []
 
-    if 0:
+    if 1:
         rundata.fgmax_data.fgmax_files = ['fgmax_header.data']
 
         # Create header file:
@@ -507,9 +507,10 @@ def setrun(claw_pkg='geoclaw'):
         # monitor fgmax points only on finest level:
         fg.min_level_check = amrdata.amr_levels_max 
 
-        fg.tstart_max = 600.              # when to start monitoring max values
+        fg.tstart_max = 30.              # when to start monitoring max values
         fg.tend_max = 1.e10               # when to stop monitoring max values
-        fg.dt_check = 20.                 # how often to update max values
+        fg.dt_check = 10.                 # how often to update max values
+        fg.arrival_tol = 1.             # tolerance for flagging wave arrival
 
         fname = 'fgmax_header.data'
         fg.write_input_data(fname)
