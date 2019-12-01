@@ -35,11 +35,41 @@ sea_level = 3.1  # lake elevation, should agree with setrun
 # adjust these values if needed for different size tsunamis:
 ylim_transects = [-5,10]  # y-axis limits for transect plots
 cmax_land = 40.  # for color scale of land (greens)
-camplitude = 4.  # for color scale on planview plots
+camplitude = 2.  # for color scale on planview plots
 
 # make symmetric about sea_level:
 cmin = sea_level-camplitude
 cmax = sea_level+camplitude
+
+def surface_or_depth_lake(current_data):
+    """
+    Return a masked array containing the surface elevation where the topo is
+    below sea level or the water depth where the topo is above sea level.
+    Mask out dry cells.  Assumes sea level is at topo=0.
+    Surface is eta = h+topo, assumed to be output as 4th column of fort.q
+    files.
+
+    Modified from visclaw.geoplot version to use sea_level
+    """
+
+    drytol = getattr(current_data.user, 'drytol', 1e-3)
+    q = current_data.q
+    h = q[0,:,:]
+    eta = q[3,:,:]
+    topo = eta - h
+
+    # With this version, the land is transparent.
+    surface_or_depth = np.ma.masked_where(h <= drytol,
+                                             np.where(topo<sea_level, eta, h))
+
+    try:
+        # Use mask covering coarse regions if it's set:
+        m = current_data.mask_coarse
+        surface_or_depth = np.ma.masked_where(m, surface_or_depth)
+    except:
+        pass
+
+    return surface_or_depth
 
 
 
@@ -88,7 +118,7 @@ def setplot(plotdata=None):
     # Figure for surface
     #-----------------------------------------
     plotfigure = plotdata.new_plotfigure(name='Domain and transects', figno=0)
-    plotfigure.kwargs = {'figsize':(14,7)}
+    plotfigure.kwargs = {'figsize':(11,7)}
     plotfigure.show = True
 
     # Set up for axes in this figure:
@@ -96,32 +126,8 @@ def setplot(plotdata=None):
     #plotaxes.axescmd = 'axes([.1,.4,.8,.5])'
     plotaxes.axescmd = 'axes([.1,.1,.4,.8])'
     plotaxes.title = 'Surface'
-    plotaxes.scaled = True
     #plotaxes.xlimits = [-122.4, -122.16]
     #plotaxes.ylimits = [47.4, 47.8]
-
-    def fixup(current_data):
-        import pylab
-        #addgauges(current_data)
-        t = current_data.t
-        t = t / 60.  # minutes
-        pylab.title('Surface at %4.2f minutes' % t, fontsize=10)
-        #pylab.xticks(fontsize=15)
-        #pylab.yticks(fontsize=15)
-    #plotaxes.afteraxes = fixup
-
-    def aa(current_data):
-        from pylab import ticklabel_format, xticks, gca, cos, pi, savefig
-        gca().set_aspect(1./cos(48*pi/180.))
-        title_hours(current_data)
-        ticklabel_format(useOffset=False)
-        xticks(rotation=20)
-
-    def aa_topo(current_data):
-        from pylab import contour, plot
-        aa(current_data)
-        #addgauges(current_data)
-        #contour(topo.X, topo.Y, topo.Z, [0], colors='k')
 
     x1_tr1 = -122.29
     x2_tr1 = -122.215
@@ -133,32 +139,32 @@ def setplot(plotdata=None):
     y1_tr2 = 47.4925
     y2_tr2 = 47.545
         
-        
-    def aa_topo_nogauges(current_data):
-        from pylab import contour, plot, text
-        aa(current_data)
+    def aa_transects(current_data):
+        from pylab import ticklabel_format, xticks, plot, text, gca,cos,pi
+        title_hours(current_data)
+        ticklabel_format(useOffset=False)
+        xticks(rotation=20)
         plot([x1_tr1, x2_tr1], [y1_tr1, y2_tr1], 'w')
         plot([x1_tr2, x2_tr2], [y1_tr2, y2_tr2], 'w')
-        text(x2_tr1+0.001,y2_tr1,'Transect 1',color='w',fontsize=8)
-        text(x1_tr2+0.001,y1_tr2,'Transect 2',color='w',fontsize=8)
+        text(x2_tr1-0.01,y2_tr1+0.005,'Transect 1',color='w',fontsize=8)
+        text(x1_tr2-0.01,y1_tr2-0.008,'Transect 2',color='w',fontsize=8)
+        gca().set_aspect(1./cos(48*pi/180.))
         #addgauges(current_data)
-        #contour(topo.X, topo.Y, topo.Z, [0], colors='k')
 
 
-    #plotaxes.afteraxes = aa_topo
-    plotaxes.afteraxes = aa_topo_nogauges
+    plotaxes.afteraxes = aa_transects
 
 
     # Water
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
     #plotitem.plot_var = geoplot.surface
-    plotitem.plot_var = geoplot.surface_or_depth
+    plotitem.plot_var = surface_or_depth_lake
     plotitem.pcolor_cmap = geoplot.tsunami_colormap
     plotitem.pcolor_cmin = cmin
     plotitem.pcolor_cmax = cmax
     plotitem.add_colorbar = True
     plotitem.amr_celledges_show = [0,0,0]
-    plotitem.amr_patchedges_show = [0,1,0,0]
+    plotitem.amr_patchedges_show = [0,0,0,0]
     plotitem.amr_data_show = [1,1,1,1,1,0,0]
 
     # Land
@@ -254,27 +260,36 @@ def setplot(plotdata=None):
     plotdata.afterframe = plot_xsec
 
     #-----------------------------------------
-    # Figure for fgmax area
+    # Figure for zoomed area
     #-----------------------------------------
-    x1,x2,y1,y2 = [-122.54, -122.4, 47.9, 48.04]
 
-    plotfigure = plotdata.new_plotfigure(name="fgmax area", figno=11)
+    # To use, set the limits as desired and set `plotfigure.show = True`
+    x1,x2,y1,y2 = [-122.23, -122.2, 47.69, 47.71]
+    plotfigure = plotdata.new_plotfigure(name="zoomed area", figno=11)
     plotfigure.show = False
-    plotfigure.kwargs = {'figsize': (6,7)}
+    plotfigure.kwargs = {'figsize': (8,7)}
 
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.scaled = False
 
-    plotaxes.xlimits = [x1-0.01, x2+0.01]
-    plotaxes.ylimits = [y1-0.01, y2+0.01]
+    plotaxes.xlimits = [x1, x2]
+    plotaxes.ylimits = [y1, y2]
 
-    plotaxes.afteraxes = aa_topo
+        
+    def aa(current_data):
+        from pylab import ticklabel_format, xticks, gca,cos,pi
+        title_hours(current_data)
+        ticklabel_format(useOffset=False)
+        xticks(rotation=20)
+        gca().set_aspect(1./cos(48*pi/180.))
+        
+    plotaxes.afteraxes = aa
 
     # Water
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
     #plotitem.plot_var = geoplot.surface
-    plotitem.plot_var = geoplot.surface_or_depth
+    plotitem.plot_var = surface_or_depth_lake
     plotitem.pcolor_cmap = geoplot.tsunami_colormap
     plotitem.pcolor_cmin = cmin
     plotitem.pcolor_cmax = cmax
