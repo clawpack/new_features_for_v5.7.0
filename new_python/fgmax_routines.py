@@ -23,45 +23,6 @@ import fgmax_tools  # local version
 import matplotlib.colors as colors
 import clawpack.visclaw.colormaps as colormaps
 
-import csv
-
-
-try:
-    rootdir = os.environ['WA_EMD_2019']
-except:
-    print("*** Need to set environment variable WA_EMD_2019")
-    sys.exit()
-
-#print('in fgmax_routines, rootdir = ',rootdir)
-
-# gauge locations:
-#gauges_csv_file = rootdir + '/info/tide_gauge_locations.csv'
-gauges_csv_file = os.path.join(rootdir, 'info/UW_2019_gauge_locations.csv')
-#print('in fgmax_routines, gauges_csv_file = ',gauges_csv_file)
-
-
-f = open(gauges_csv_file,'r')
-csv_reader = csv.reader(f)
-
-gaugeloc = {}
-gaugexy = {}
-gauge_domain = {}
-gaugenos = []
-for row in csv_reader:
-    try:
-        xg = float(row[2])
-        yg = float(row[3])
-    except:
-        continue  # go to next row
-    gaugeno = int(row[0])
-    #if gaugeno<100:
-        #gaugeno += 100
-    gaugeloc[gaugeno] = row[4]
-    gauge_domain[gaugeno] = row[5]
-    gaugexy[gaugeno] = (xg,yg)
-    gaugenos.append(gaugeno)
-
-
 
 def make_fgmax_new(params):
     import matplotlib.pyplot as plt
@@ -152,8 +113,9 @@ def make_fgmax_new(params):
         plt.xticks(rotation=20)
         plt.title(title)
 
-        if 1:
+        if 0:
             # plot gauges in this region:
+            # (will only work if gaugenos and gaugexy set properly)
             for gaugeno in gaugenos:
                 xg,yg = gaugexy[gaugeno]
                 #print('gauge ',gaugeno, xg, yg)
