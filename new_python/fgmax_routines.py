@@ -204,15 +204,15 @@ def process_fgmax(params):
            (j1<0) or (j2-j1+1 != len(fgm.y)):
             print('*** wet_mask does not cover fgm extent, not using')
             use_wet_mask = False
-            fgm.allow_wet_init = None
+            fgm.force_dry_init = None
         else:
-            fgm.allow_wet_init = wet_mask.Z[j1:j2+1, i1:i2+1]
+            fgm.force_dry_init = wet_mask.Z[j1:j2+1, i1:i2+1]
     else:
-        fgm.allow_wet_init = None
+        fgm.force_dry_init = None
         print('*** use_wet_mask is False')
         
-    if fgm.allow_wet_init is not None:
-        fgm.h_onshore = ma.masked_where(fgm.allow_wet_init==1., fgm.h)
+    if fgm.force_dry_init is not None:
+        fgm.h_onshore = ma.masked_where(fgm.force_dry_init==1., fgm.h)
     else:
         fgm.h_onshore = ma.masked_where(fgm.B0 < 0., fgm.h)
     
@@ -304,7 +304,7 @@ def plot_fgmax_masked(params, fgm):
     
     if plot_shore: 
         if use_wet_mask:
-            plt.contour(fgm.X,fgm.Y,fgm.allow_wet_init,[0.5],colors='g',lw=0.5)
+            plt.contour(fgm.X,fgm.Y,fgm.force_dry_init,[0.5],colors='g',lw=0.5)
         else:
             plt.plot(shore_x, shore_y, 'g', lw=0.5)
 
@@ -358,7 +358,7 @@ def plot_fgmax_masked(params, fgm):
     
     if plot_shore: 
         if use_wet_mask:
-            plt.contour(fgm.X,fgm.Y,fgm.allow_wet_init,[0.5],colors='g',lw=0.5)
+            plt.contour(fgm.X,fgm.Y,fgm.force_dry_init,[0.5],colors='g',lw=0.5)
         else:
             plt.plot(shore_x, shore_y, 'g', lw=0.5)
 
@@ -376,7 +376,7 @@ def make_nc_input(fname_nc, fgm, force=False, verbose=True):
             print('*** netCDF file already exists, \n'\
                 + '*** NOT overwriting '\
                 + '--- use force==True to overwrite' )
-            return
+            return -1
     
     with netCDF4.Dataset(fname_nc, 'w') as rootgrp:
 
@@ -416,16 +416,17 @@ def make_nc_input(fname_nc, fgm, force=False, verbose=True):
         else:
             if verbose: print('fgm.fgmax_point is None, not adding')
             
-        if fgm.allow_wet_init is not None:
-            allow_wet_init = \
-                rootgrp.createVariable('allow_wet_init','u1',('lat','lon',))
-            allow_wet_init[:,:] = fgm.allow_wet_init
+        if fgm.force_dry_init is not None:
+            force_dry_init = \
+                rootgrp.createVariable('force_dry_init','u1',('lat','lon',))
+            force_dry_init[:,:] = fgm.force_dry_init
         else:
-            if verbose: print('fgm.allow_wet_init is None, not adding')  
+            if verbose: print('fgm.force_dry_init is None, not adding')  
 
         print('Created %s' % fname_nc)            
         if verbose:
-            print('History:  ', rootgrp.history)      
+            print('History:  ', rootgrp.history) 
+        return 0     
         
 def write_nc_output(fname_nc, fgm, new=False, force=False, 
                     outdir='Unknown', verbose=True):
@@ -438,8 +439,11 @@ def write_nc_output(fname_nc, fgm, new=False, force=False,
     fv = -9999.   # fill_value for netcdf4
     
     if new:
-        # first create a new .nc file with X,Y,fgmax_point,allow_wet_init:
-        make_nc_input(fname_nc, fgm, force=force, verbose=verbose)        
+        # first create a new .nc file with X,Y,fgmax_point,force_dry_init:
+        result = make_nc_input(fname_nc, fgm, force=force, verbose=verbose)
+        if result == -1:
+            print('*** make_nc_input failed, not appending output')
+            return        
         
     if outdir is 'Unknown':
         # Cannot determine tfinal or run_finished time
@@ -481,7 +485,7 @@ def write_nc_output(fname_nc, fgm, new=False, force=False,
         Xclose = numpy.allclose(fgm.X, X, atol=0.1*dx)
         Yclose = numpy.allclose(fgm.Y, Y, atol=0.1*dx)
         
-        if (fgm.X.shape != X.shape) or (not Xclose) or (not Yclose):
+        if (fgm.X.shape != X.shape):
             # for now raise an exception, might want to extent to allow
             # filling only part of input arrays
             print('*** Mismatch of fgm with data in nc file:')
@@ -491,6 +495,11 @@ def write_nc_output(fname_nc, fgm, new=False, force=False,
             print('nc  bounding_box = ',bounding_box)
             raise ValueError('*** Mismatch of fgm with data in nc file')
     
+        Xclose = numpy.allclose(fgm.X, X, atol=0.1*dx)
+        Yclose = numpy.allclose(fgm.Y, Y, atol=0.1*dx)
+        if (not (Xclose and Yclose)):
+            raise ValueError('*** Mismatch of fgm.X or fgm.Y with data in nc file')
+            
 
         rootgrp.history += "Added output " + time.ctime(time.time())
         rootgrp.history += " in %s;  " % os.getcwd()
@@ -645,7 +654,7 @@ def read_nc(fname_nc, verbose=True):
         fgm.hss = get_as_array('hss')
         fgm.hmin = get_as_array('hmin')
         fgm.arrival_time = get_as_array('arrival_time')
-        fgm.allow_wet_init = get_as_array('allow_wet_init')
+        fgm.force_dry_init = get_as_array('force_dry_init')
         
     if verbose:
         print('Returning FGmaxMaskedGrid object fgm')
