@@ -206,9 +206,8 @@ def setplot(plotdata=None):
         
         # Transect 1:
         plt.axes([.55,.5,.4,.3])
-        xlon = numpy.linspace(x1_tr1, x2_tr1, 1000)
+        xout = numpy.linspace(x1_tr1, x2_tr1, 1000)
         yout = numpy.linspace(y1_tr1, y2_tr1, 1000)
-        xout = xlon*numpy.ones(yout.shape)    
         eta = gridtools.grid_output_2d(framesoln, eta1, xout, yout)        
         topo = gridtools.grid_output_2d(framesoln, B1, xout, yout)
         
@@ -229,9 +228,8 @@ def setplot(plotdata=None):
         
         # Transect 2:
         plt.axes([.55,.1,.4,.3])
-        xlon = numpy.linspace(x1_tr2, x2_tr2, 1000)
+        xout = numpy.linspace(x1_tr2, x2_tr2, 1000)
         yout = numpy.linspace(y1_tr2, y2_tr2, 1000)
-        xout = xlon*numpy.ones(yout.shape)    
         eta = gridtools.grid_output_2d(framesoln, eta1, xout, yout)        
         topo = gridtools.grid_output_2d(framesoln, B1, xout, yout)
         
