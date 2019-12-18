@@ -452,11 +452,25 @@ class Topography(object):
         #    self.read(path=path, topo_type=topo_type, unstructured=unstructured,
         #     mask=mask, filter_region=filter_region)
 
-    def set_xyZ(self, x, y, Z):
+    def set_xyZ(self, X, Y, Z):
         r"""
         Set _x, _y, and _Z attributes and then generate X,Y,Z.
-        Shape of Z should be (len(y), len(x)).
+
+        If X,Y are 1d arrays, then shape of Z should be (len(Y), len(X)).
+
+        Allow X,Y to be 2d arrays of shape Z.shape, in which case
+        first extract x,y
         """
+
+        if X.ndim == 1:
+            x = X
+        else:
+            x = X[0,:]
+
+        if Y.ndim == 1:
+            y = Y
+        else:
+            y = Y[:,0]
 
         if Z.shape != (len(y),len(x)):
             raise ValueError("shape of Z should be (len(y), len(x))")
@@ -477,6 +491,12 @@ class Topography(object):
         self._X = None
         self._Y = None
         self.generate_2d_coordinates()
+
+        if X.ndim == 2:
+            assert numpy.allclose(self.X, X), '*** X set incorrectly?'
+        if Y.ndim == 2:
+            assert numpy.allclose(self.Y, Y), '*** Y set incorrectly?'
+
 
     def generate_2d_topo(self, mask=False):
         r"""Generate a 2d array of the topo."""
