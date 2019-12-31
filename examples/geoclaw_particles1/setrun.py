@@ -8,8 +8,18 @@ that will be read in by the Fortran code.
 
 from __future__ import absolute_import
 from __future__ import print_function
-import os
+import os, sys
 import numpy as np
+
+
+new_code = '../../new_python'
+print('Adding %s to path' % new_code)
+sys.path.insert(0, new_code)
+
+import data_FlagRegions
+import kmltools
+import region_tools
+import fgmax_tools
 
 
 #------------------------------
@@ -314,6 +324,19 @@ def setrun(claw_pkg='geoclaw'):
     regions.append([2, 2, 0., 1.e10, 25., 60., 15., 50.])
     regions.append([3, 3, 0., 1.e10, 30., 50., 25., 45.])
 
+
+    # --------------- 
+    # NEW flagregions
+    # ---------------
+
+    # Eventually add this to amrclaw.data but for now in data_FlagRegions
+    rundata.add_data(data_FlagRegions.FlagRegionData(num_dim=2), 'flagregiondata')
+    flagregions = rundata.flagregiondata.flagregions  # initialized to []
+
+    # now append as many flagregions as desired to this list:
+
+
+
     # == setgauges.data values ==
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
     # rundata.gaugedata.add_gauge()
@@ -360,7 +383,7 @@ def setgeo(rundata):
        
     # == Physics ==
     geo_data.gravity = 9.81
-    geo_data.coordinate_system = 1
+    geo_data.coordinate_system = 1   # meters
     geo_data.earth_radius = 6367.5e3
 
     # == Forcing Options
@@ -392,11 +415,28 @@ def setgeo(rundata):
     #   [topotype, minlevel,maxlevel,fname]
 
     # == setqinit.data values ==
+   
+    # for now need the new version of QinitData:
+    import data_Qinit  # eventually merge this into geoclaw.data
+    rundata.replace_data('qinit_data', data_Qinit.QinitData())
+   
     rundata.qinit_data.qinit_type = 4
     rundata.qinit_data.qinitfiles = []
     # for qinit perturbations, append lines of the form: (<= 1 allowed for now!)
     #   [minlev, maxlev, fname]
     rundata.qinit_data.qinitfiles.append([1, 2, 'hump.xyz'])
+   
+    rundata.qinit_data.variable_eta_init = True  # newly added to QinitData
+ 
+    if 0:
+        force_dry = data_Qinit.ForceDry()
+        force_dry.tend = 15*60.
+        force_dry.fname = 'input_files/force_dry_init.data'
+        rundata.qinit_data.force_dry_list.append(force_dry)
+
+
+
+
 
     # == setfixedgrids.data values ==
     fixedgrids = rundata.fixed_grid_data.fixedgrids

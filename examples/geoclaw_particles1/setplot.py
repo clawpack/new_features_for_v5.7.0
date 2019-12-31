@@ -73,7 +73,7 @@ def setplot(plotdata=None):
         gaugetools.plot_gauge_locations(current_data.plotdata, \
              gaugenos=gaugenos_stationary, format_string='kx', add_labels=False)
         kwargs={'loc':'upper left'}
-        legend_tools.add_legend(['Lagrangian gauge','Stationary gauge'],
+        legend_tools.add_legend(['Lagrangian particle','Stationary gauge'],
                 linestyles=['',''], markers=['o','x'],
                 loc='lower right', framealpha=0.5, fontsize=10)
 
