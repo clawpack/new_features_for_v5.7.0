@@ -272,7 +272,8 @@ def surface_or_depth(current_data):
 
 
 
-def kml_build_colorbar(cb_filename, cmap, cmin=None, cmax=None, norm=None):
+def kml_build_colorbar(cb_filename, cmap, cmin=None, cmax=None, 
+                       norm=None, label=None):
 
     import matplotlib.pyplot as plt
     import matplotlib as mpl
@@ -288,6 +289,8 @@ def kml_build_colorbar(cb_filename, cmap, cmin=None, cmax=None, norm=None):
     cb1 = mpl.colorbar.ColorbarBase(ax1,cmap=cmap,
                                     norm=norm,
                                     orientation='vertical')
+    if label is not None:
+        cb1.set_label(label)
     # This is called from plotpages, in <plotdir>.
     plt.savefig(cb_filename,Transparent=True)
 
