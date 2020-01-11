@@ -275,6 +275,13 @@ def surface_or_depth(current_data):
 def kml_build_colorbar(cb_filename, cmap, cmin=None, cmax=None, 
                        norm=None, label=None):
 
+    """
+    Make a png file with a colorbar corresponding to cmap, norm.
+    cmin, cmax are used only if nrm is not provided.
+    
+    Note: a better version of this is now in kmltools.
+    """
+    
     import matplotlib.pyplot as plt
     import matplotlib as mpl
 

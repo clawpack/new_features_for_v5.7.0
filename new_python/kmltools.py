@@ -1100,6 +1100,24 @@ def kml_png(mapping):
 """.format(**mapping)
 
     return kml_text
+    
+def kml_cb(mapping):
+    """
+    Create text for a colorbar png file overlay
+    """
+
+    kml_text = """
+<ScreenOverlay>
+  <name>{name:s}</name>
+  <Icon>
+    <href>{cb_file:s}</href>
+  </Icon>
+  <overlayXY x="{xfrac:.4f}" xunits="fraction" y="{yfrac:.4f}" yunits="fraction"/>
+  <screenXY x="{xfrac:.4f}" xunits="fraction" y="{yfrac:.4f}" yunits="fraction"/>
+</ScreenOverlay>
+""".format(**mapping)
+
+    return kml_text
 
 radio_style_text = """
 <Style id="folderStyle">
@@ -1113,7 +1131,8 @@ radio_style_text = """
 
 
 def png2kml(extent, png_files, png_names=None, name='png_files', fname=None, 
-            radio_style=False, verbose=True):
+            radio_style=False, cb_files=None, cb_names=None, 
+            cb_xfracs=None, cb_yfracs=None, verbose=True):
     """
     Create a kml file `fname` linking overlays for each png file in `png_files`.
     
@@ -1161,6 +1180,27 @@ def png2kml(extent, png_files, png_names=None, name='png_files', fname=None,
     if radio_style:
         kml_text = kml_text + radio_style_text
         
+    if cb_files:
+        # colorbars
+        for k,cb_file in enumerate(cb_files):
+            
+            mapping['cb_file'] = cb_file
+            try:
+                mapping['name'] = cb_names[k]
+            except:
+                mapping['name'] =  'Colorbar'
+                
+            try:
+                mapping['xfrac'] = cb_xfracs[k]
+            except:
+                mapping['xfrac'] = 0.025 + k*0.075
+            try:
+                mapping['yfrac'] = cb_yfracs[k]
+            except:
+                mapping['yfrac'] = 0.05
+                
+            kml_text = kml_text + kml_cb(mapping)
+        
     kml_text = kml_text + kml_footer()
     kml_file = open(fname,'w')
     kml_file.write(kml_text)
@@ -1169,4 +1209,35 @@ def png2kml(extent, png_files, png_names=None, name='png_files', fname=None,
     if verbose:
         print("Created ",fname)
 
+
+def kml_build_colorbar(cb_filename, cmap, cmin=None, cmax=None, 
+                       norm=None, label=None, title=None):
+
+    """
+    Make a png file with a colorbar corresponding to cmap, norm.
+    cmin, cmax are used only if nrm is not provided.
+    """
+    
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+
+    fig = plt.figure(figsize=(1.2,3))
+    ax1 = fig.add_axes([0.3, 0.075, 0.20, 0.80])
+    tick = ax1.yaxis.get_major_ticks()
+    plt.tick_params(axis='y', which='major', labelsize=8)
+
+    if norm is None:
+        norm = mpl.colors.Normalize(vmin=cmin,vmax=cmax)
+
+    cb1 = mpl.colorbar.ColorbarBase(ax1,cmap=cmap,
+                                    norm=norm,
+                                    orientation='vertical')
+    if label:
+        cb1.set_label(label)
+    if title:
+        ax1.set_title(title)
         
+        
+    # This is called from plotpages, in <plotdir>.
+    plt.savefig(cb_filename,Transparent=True)
+
