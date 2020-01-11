@@ -325,25 +325,22 @@ def setplot(plotdata=None):
     plotaxes.afteraxes = setglimits_speed
 
 
+
     #-----------------------------------------
     # Figures for fgmax plots
     #-----------------------------------------
-    # Note: need to move fgmax png files into _plots after creating with
-    #   python run_process_fgmax.py
-    # This just creates the links to these figures...
+    # Note: You need to move fgmax png files into _plots/_other_figures after 
+    # creating them, e.g., by running the process_fgmax notebook or script.
+    # The lines below just create links to these figures from _PlotIndex.html 
 
-    if 0:
-        ### Putting them in _other_figures with the proper name as a link
-        ### Can run process fgmax either before or after setplot now.
-        otherfigure = plotdata.new_otherfigure(name='max depth',
-                        fname='_other_figures/%s_%s_h_onshore.png' \
-                                % (params.loc,params.event))
-        otherfigure = plotdata.new_otherfigure(name='max depth on GE image',
-                        fname='_other_figures/%s_%s_h_onshore_GE.png' \
-                                % (params.loc,params.event))
-        otherfigure = plotdata.new_otherfigure(name='max speed',
-                        fname='_other_figures/%s_%s_speed.png' \
-                                % (params.loc,params.event))
+    otherfigure = plotdata.new_otherfigure(name='max depth',
+                    fname='_other_figures/h_onshore.png')
+
+    otherfigure = plotdata.new_otherfigure(name='max speed',
+                    fname='_other_figures/speed.png')
+        
+    # add additional lines for any other figures you want added to the index.            
+                    
 
     # Plots of timing (CPU and wall time):
 
@@ -360,6 +357,7 @@ def setplot(plotdata=None):
         except:
             print('*** Error making timing plots')
 
+    # create a link to this webpage from _PlotIndex.html:
     otherfigure = plotdata.new_otherfigure(name='timing',
                     fname='_timing_figures/timing.html')
     otherfigure.makefig = make_timing_plots
