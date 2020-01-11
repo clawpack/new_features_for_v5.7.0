@@ -523,7 +523,7 @@ def quad2kml(xy,fname=None,name='quad',color='FF0000',width=3,verbose=True):
 
 
 def poly2kml(xy,fname=None,name='poly',color='00FF00', width=3,
-             verbose=True):
+             verbose=True, max_vertices_in_description=20):
     """
     Make a KML polygon with default color blue.
 
@@ -535,7 +535,8 @@ def poly2kml(xy,fname=None,name='poly',color='00FF00', width=3,
      - *color* (str) Color in format aabbggrr
      - *width* (str) line width
      - *verbose* (bool) - If *True*, print out info
-
+     - *max_vertices_in_description* (int) - if more than this number
+       of vertices, only list number in description box, not all vertices
     """
 
     if fname is None:
@@ -544,9 +545,10 @@ def poly2kml(xy,fname=None,name='poly',color='00FF00', width=3,
     x,y = xy
 
     if verbose:
-        print("Polygon:     %10.6f  %10.6f" % (x[0],y[0]))
-        for j in range(1,len(x)):
-            print("             %10.6f  %10.6f" % (x[j],y[j]))
+        print("Creating kml for polygon with %i vertices" % len(x))
+        if (len(x) <= max_vertices_in_description):
+            for j in range(len(x)):
+                print("             %10.6f  %10.6f" % (x[j],y[j]))            
 
     elev = 0.
     kml_text = kml_header(fname)
@@ -556,9 +558,11 @@ def poly2kml(xy,fname=None,name='poly',color='00FF00', width=3,
     mapping['y'] = y
     mapping['elev'] = elev
     mapping['name'] = name
-    d = "  x[0] = %s, y[0] = %s\n" % (x[0],y[0]) 
-    for j in range(1,len(x)):
-        d = d + "  x[%i] = %s, y[%i] = %s" % (j,f2s(x[j]),j,f2s(y[j]))
+    d = "  Polygon with %i vertices" % len(x)
+    if (len(x) <= max_vertices_in_description):
+        d = "  x[0] = %s, y[0] = %s\n" % (f2s(x[0]),f2s(y[0])) 
+        for j in range(1,len(x)):
+            d = d + "  x[%i] = %s, y[%i] = %s\n" % (j,f2s(x[j]),j,f2s(y[j]))
     mapping['desc'] = d
     mapping['color'] = color
     mapping['width'] = width
