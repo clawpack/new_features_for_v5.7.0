@@ -150,7 +150,7 @@ def setplot(plotdata=None):
     #-----------------------------------------
     # Figures for gauges
     #-----------------------------------------
-    plotfigure = plotdata.new_plotfigure(name='Surface & topo', figno=300, \
+    plotfigure = plotdata.new_plotfigure(name='Surface', figno=300, \
                     type='each_gauge')
 
     plotfigure.clf_each_gauge = True
@@ -158,33 +158,25 @@ def setplot(plotdata=None):
     # Set up for axes in this figure:
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.xlimits = 'auto'
-    plotaxes.ylimits = [-100,100]
-    plotaxes.title = 'Surface'
+    plotaxes.ylimits = [-25,50]
+    plotaxes.title = 'Surface'  # reset in fix_gauge
 
     # Plot surface as blue curve:
     plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
     plotitem.plot_var = 3
     plotitem.plotstyle = 'b-'
 
-    # Plot topo as green curve:
-    plotitem = plotaxes.new_plotitem(plot_type='1d_plot')
-
-    def gaugetopo(current_data):
-        q = current_data.q
-        h = q[0,:]
-        eta = q[3,:]
-        topo = eta - h
-        return topo
-        
-    plotitem.plot_var = gaugetopo
-    plotitem.plotstyle = 'g-'
-    def add_zeroline(current_data):
-        from pylab import plot, legend
+    def fix_gauge(current_data):
+        from pylab import plot, title
         t = current_data.t
-        legend(('surface','topography'),loc='lower left')
         plot(t, 0*t, 'k')
+        gaugeno = current_data.gaugeno
+        if gaugeno in gaugenos_stationary:
+            title('Surface elevation at stationary gauge %s' % gaugeno)
+        else:
+            title('Surface elevation at lagrangian gauge %s' % gaugeno)
 
-    plotaxes.afteraxes = add_zeroline
+    plotaxes.afteraxes = fix_gauge
 
     #-----------------------------------------
     
@@ -194,7 +186,7 @@ def setplot(plotdata=None):
     plotdata.printfigs = True                # print figures
     plotdata.print_format = 'png'            # file format
     plotdata.print_framenos = range(40)
-    plotdata.print_gaugenos = []             # list of gauges to print
+    plotdata.print_gaugenos = [15,25]        # list of gauges to print
     plotdata.print_fignos = 'all'            # list of figures to print
     plotdata.html = True                     # create html files of plots?
     plotdata.html_homelink = '../README.html'   # pointer for top of index
