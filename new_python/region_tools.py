@@ -25,6 +25,8 @@ class RuledRectangle(object):
             self.upper = slu[:,2]
             if rect is not None:
                 print('*** Warning: ignoring rect since slu also given')
+            assert np.diff(self.s).min() > 0, \
+                '*** s must be monotonically increasing: \n  s =  %s' % self.s
         elif rect is not None:
             # define a simple rectangle:
             x1,x2,y1,y2 = rect
@@ -52,12 +54,22 @@ class RuledRectangle(object):
         """
         Return npts by 3 array with columns (s, lower, upper)
         """
+        assert np.diff(self.s).min() > 0, \
+            '*** s must be monotonically increasing: \n  s =  %s' % self.s
         slu = np.vstack((self.s, self.lower, self.upper)).T
         return slu
 
             
     def vertices(self):
+        """
+        Return the vertices (x,y) of the polygon defined by this RuledRectangle.
+        """
+        
+        assert np.diff(self.s).min() > 0, \
+            '*** s must be monotonically increasing: \n  s =  %s' % self.s
+            
         if self.method == 0:
+            # stacked rectangles, requires doubling up points for vertices
             ss = [self.s[0]]
             for sk in self.s[1:-1]:
                 ss += [sk,sk]
@@ -71,6 +83,7 @@ class RuledRectangle(object):
             lu = np.hstack((ll, np.flipud(uu), self.lower[0]))
             
         elif self.method == 1:
+            # points defined by s, lower, upper are connected by lines
             ss = np.hstack((self.s, np.flipud(self.s), self.s[0]))
             lu = np.hstack((self.lower, np.flipud(self.upper), self.lower[0]))
             
@@ -92,9 +105,13 @@ class RuledRectangle(object):
         will be a masked array that can be used to plot only the values
         inside the Ruled Region.
         
-        Only implemented for self.method == 1 ?
+        Works for self.method == 0 or 1, and also
+              for self.s monotonically increasing or decreasing, 
+                         but elsewhere we require increasing so check for that.
         
         """
+        assert np.diff(self.s).min() > 0, \
+            '*** s must be monotonically increasing: \n  s =  %s' % self.s
         
         transpose_arrays =  (X[0,0] == X[0,-1])
         if transpose_arrays:
@@ -104,46 +121,87 @@ class RuledRectangle(object):
             x = X[0,:]
             y = Y[:,0]
         assert x[0] != x[-1], '*** Wrong orientation?'            
+        
+        def bracket(xy, s):
+            """
+            Given a point xy (an x or y value)
+            and an array s that is monotone increasing or decreasing, 
+            return indices (k1, k2) such that 
+                s[k1] <= xy <= s[k2]
+            If xy is outside the range of s, return (-1,-1)
+            """
+            from numpy import ma, argmin
+            if xy < s.min() or xy > s.max():
+                return -1,-1
+            pos = ma.masked_where(xy-s < 0, xy-s)
+            k1 = argmin(pos)
+            pos = ma.masked_where(s-xy < 0, s-xy)
+            k2 = argmin(pos)
+            return k1,k2
             
         mask = np.empty((len(y),len(x)), dtype=bool)
         mask[:,:] = True
         if self.ixy in [1,'x']:
-            iin, = np.where(np.logical_and(self.s.min() < x, x < self.s.max()))
+            # indices of x array that lie within s.min() to s.max():
+            iin, = np.where(np.logical_and(self.s.min() <= x, x <= self.s.max()))
+            
             for i in iin:
+                # a column of array that might include points in the polygon
                 xi = x[i]
-                i1, = np.where(self.s < xi)
-                if len(i1) > 0:
-                    i1 = i1.max()
-                    if i1 < len(self.s)-1:
-                        alpha = (xi-self.s[i1])/(self.s[i1+1]-self.s[i1])
-                        ylower = (1-alpha)*self.lower[i1] + \
-                                     alpha*self.lower[i1+1]
-                        yupper = (1-alpha)*self.upper[i1] + \
-                                     alpha*self.upper[i1+1]   
-                        j, = np.where(np.logical_and(ylower < y, y < yupper))
-                        mask[j,i] = False
+                # determine k1,k2 such that s[k1] <= xi <= s[k2]:
+                k1,k2 = bracket(xi, self.s)
+                
+                if k1 > -1:
+                    sk1 = self.s[k1]
+                    sk2 = self.s[k2]
+                    if (self.method==0) or (sk1 >= xi):
+                        ylower = self.lower[k1]
+                        yupper = self.upper[k1]
+                    else:
+                        # method==1 and not at top, so linear interpolation:
+                        alpha = (xi-sk1)/(sk2-sk1)
+                        ylower = (1-alpha)*self.lower[k1] + \
+                                     alpha*self.lower[k2]
+                        yupper = (1-alpha)*self.upper[k1] + \
+                                     alpha*self.upper[k2] 
+                    # indices j for which ylower <= y[j] <= yupper, so inside:  
+                    j, = np.where(np.logical_and(ylower <= y, y <= yupper))
+                    mask[j,i] = False
+                    
         elif self.ixy in [2,'y']:
-            jin, = np.where(np.logical_and(self.s.min() < y, y < self.s.max()))
+            # indices of y array that lie within s.min() to s.max():
+            jin, = np.where(np.logical_and(self.s.min() <= y, y <= self.s.max()))
+            
             for j in jin:
+                # a row of array that might include points in the polygon
                 yj = y[j]
-                i1, = np.where(self.s < yj)
-                if len(i1) > 0:
-                    i1 = i1.max()
-                    if i1 < len(self.s)-1:
-                        alpha = (yj-self.s[i1])/(self.s[i1+1]-self.s[i1])
-                        xlower = (1-alpha)*self.lower[i1] + \
-                                     alpha*self.lower[i1+1]
-                        xupper = (1-alpha)*self.upper[i1] + \
-                                     alpha*self.upper[i1+1]   
-                        i, = np.where(np.logical_and(xlower < x, x < xupper))
-                        mask[j,i] = False
+                # determine k1,k2 such that s[k1] <= yj <= s[k2]:
+                k1,k2 = bracket(yj, self.s)
+                
+                if k1 > -1:
+                    sk1 = self.s[k1]
+                    sk2 = self.s[k2]
+                    if (self.method==0) or (min(sk1,sk2) >= yj):
+                        xlower = self.lower[k1]
+                        xupper = self.upper[k1]
+                    else:
+                        # method==1 and not at top, so linear interpolation:
+                        alpha = (yj-sk1)/(sk2-sk1)
+                        xlower = (1-alpha)*self.lower[k1] + \
+                                     alpha*self.lower[k2]
+                        xupper = (1-alpha)*self.upper[k1] + \
+                                     alpha*self.upper[k2]   
+                    # indices i for which xlower <= x[i] <= xupper, so inside:
+                    i, = np.where(np.logical_and(xlower <= x, x <= xupper))
+                    mask[j,i] = False
+                    
         if transpose_arrays:
             mask = mask.T
             
         return mask
-            
-        
-    def write(self, fname):
+
+                    
+    def write(self, fname, verbose=False):
         slu = self.slu()
         ds = self.s[1:] - self.s[:-1]
         dss = ds.max() - ds.min()
@@ -161,6 +219,9 @@ class RuledRectangle(object):
         header = """\n%i   ixy\n%i   method\n%g    ds\n%i    nrules""" \
             % (ixyint,self.method,self.ds,len(self.s))
         np.savetxt(fname, slu,header=header,comments='',fmt='%.9f  ')
+        
+        if verbose:
+            print("Created %s" % fname)
 
     def read(self, fname):
         lines = open(fname,'r').readlines()
@@ -186,7 +247,8 @@ class RuledRectangle(object):
         
     def make_kml(self, fname='RuledRectangle.kml', name='RuledRectangle', 
                  color='00FFFF', width=2, verbose=False):
-        from clawpack.geoclaw import kmltools
+        #from clawpack.geoclaw import kmltools
+        import kmltools
         x,y = self.vertices()
         kmltools.poly2kml((x,y), fname=fname, name=name, color=color, 
                           width=width, verbose=verbose)
@@ -194,7 +256,21 @@ class RuledRectangle(object):
         
 def ruledrectangle_covering_selected_points(X, Y, pts_chosen, ixy, method=0,
                                             padding=0, verbose=True):
-
+    """
+    Given 2d arrays X,Y and an array pts_chosen of the same shape,
+    returns a RuledRectangle that covers these points as compactly as possible.
+    If method==0 then the RuledRectangle will be "stacked rectangles" that 
+    cover all the cells indicated by pts_chosen 
+    (assuming the X,Y points are cell centers on a uniform grid).
+    
+    If method==1, then the RuledRectangle will cover the cell centers but
+    not all the full grid cells, since the edges will be lines connecting
+    some cell centers.
+    """
+        
+    if padding != 0:
+        print('*** Warning, padding != 0 is not implemented!')
+        
     if np.ndim(X) == 2:
         x = X[0,:]
         y = Y[:,0]
