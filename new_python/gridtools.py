@@ -1,25 +1,35 @@
 """
+Functions to take a rectangular patch of data, or an AMRClaw framesoln
+containing many patches, and extract values on a new single grid.
+Can be used to generate a uniform grid from an AMR solution, or to extract
+a 1d transect (or values at any given set of points) from a 2d patch or
+framesoln.
+
 
 :Functions:
   - grid_eval_2d: take single patch of 2d data and evaluate on new grid
   - grid_output_2d: take 2d (AMR) solution and evaluate on new grid
  
 :Todo:
-  - extend to 1d and 3d.
+  - extend to 1d and 3d inputs.
 
 """
 
 from __future__ import print_function
 import numpy as np
 
-def grid_eval_2d(X, Y, Q, xout, yout, return_ma=True):
+def grid_eval_2d(X, Y, Q, xout, yout, method='nearest', return_ma=True):
     """
     Utility function that takes a single patch of data in 2d and
     returns values on 1d or 2d grid specified by xout, yout.
 
     Input:
         arrays X,Y defining a grid patch and data Q on this patch,
+            Q can be a 2d array of the same shape as X,Y or a
+            3d array with Q[m,:,:] corresponding to the m'th value at each point
         xout, yout defining the points for output (1d or 2d arrays)
+        method: by default 'nearest', which samples piecewise constant 
+            values in each cell.  Can also set to 'linear'
         return_ma (bool) determines if output is a masked array
     Returns:
         qout
@@ -56,6 +66,9 @@ def grid_eval_2d(X, Y, Q, xout, yout, return_ma=True):
     y1 = Y[0,:]
     dx = x1[1] - x1[0]
     dy = y1[1] - y1[0]
+    if dx<=0 or dy<=0:
+        raise ValueError('X[:,0],Y[0,:] must be increasing. ' \
+                + 'Need to transpose arrays?')
 
     # augment Q with border of values on all 4 sides:
     x1 = np.hstack((x1[0]-0.501*dx, x1, x1[-1]+0.501*dx))
@@ -74,7 +87,7 @@ def grid_eval_2d(X, Y, Q, xout, yout, return_ma=True):
 
     qout = np.empty([nvars]+list(xout.shape))
     for k in range(nvars):
-        evalfunc = RegularGridInterpolator((x1,y1), Q1[k,:,:], method='nearest',
+        evalfunc = RegularGridInterpolator((x1,y1), Q1[k,:,:], method=method,
                 bounds_error=False, fill_value=np.nan)
         xyout = np.vstack((xout1,yout1)).T
         qout_k = evalfunc(xyout)
@@ -99,7 +112,7 @@ def grid_eval_2d(X, Y, Q, xout, yout, return_ma=True):
     
 
 def grid_output_2d(framesoln, out_var, xout, yout, levels='all', 
-                   return_ma=True):
+                   method='nearest', return_ma=True):
 
     """
     :Input:
@@ -110,6 +123,8 @@ def grid_output_2d(framesoln, out_var, xout, yout, levels='all',
                  If type(out_var) == int, then Q[i,j] = q[out_var,i,j]
         xout, yout: arrays of output points (1d or 2d arrays)
         levels: list of levels to use, or 'all'
+        method: by default 'nearest', which samples piecewise constant 
+            values in each cell.  Can also set to 'linear'
         return_ma: True to return as masked_array, False to return with
                 NaN in locations that framesoln doesn't cover.
     :Output:
@@ -165,7 +180,8 @@ def grid_output_2d(framesoln, out_var, xout, yout, levels='all',
         else:
             Q = out_var(state.q)
 
-        qout1 = grid_eval_2d(Xc, Yc, Q, xout, yout, return_ma=False)
+        qout1 = grid_eval_2d(Xc, Yc, Q, xout, yout, method=method, 
+                             return_ma=False)
         qout = np.where(np.isnan(qout1), qout, qout1)
         if return_ma:
             # convert from an array with nan's to a masked array:
