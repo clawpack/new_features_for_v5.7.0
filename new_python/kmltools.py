@@ -1211,7 +1211,7 @@ def png2kml(extent, png_files, png_names=None, name='png_files', fname=None,
 
 
 def kml_build_colorbar(cb_filename, cmap, cmin=None, cmax=None, 
-                       norm=None, label=None, title=None):
+                       norm=None, label=None, title=None, extend='neither'):
 
     """
     Make a png file with a colorbar corresponding to cmap, norm.
@@ -1231,6 +1231,7 @@ def kml_build_colorbar(cb_filename, cmap, cmin=None, cmax=None,
 
     cb1 = mpl.colorbar.ColorbarBase(ax1,cmap=cmap,
                                     norm=norm,
+                                    extend=extend,
                                     orientation='vertical')
     if label:
         cb1.set_label(label)
