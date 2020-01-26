@@ -55,8 +55,6 @@ c          each step) to keep track of when that level should
 c          have its error estimated and finer levels should be regridded.
 c ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::
 c
-      call system_clock(tick_clock_start,tick_clock_rate)
-      call cpu_time(tick_cpu_start)
 
 
       ncycle         = nstart
@@ -491,6 +489,7 @@ c
                  call print_gauges_and_reset_nextLoc(ii)
               end do
            endif
+           dumpout = .true.
       endif
 
 c  # checkpoint everything for possible future restart
@@ -506,11 +505,9 @@ c  # checkpoint everything for possible future restart
 c  # (unless we just did it based on dumpchk)
 c
       ! write gauges first in case lagrangian gauge x,y needed by check         
-      !if (num_gauges .gt. 0) then
-      if (.false.) then  
-         ! RJL: I don't think we need this...
-         ! we always print gauges after valout, so we just did
-         if (.not. dumpchk) then
+      if (num_gauges .gt. 0) then
+         if (.not. dumpout) then
+             ! normally this was done already, unless nout = 0
              do ii = 1, num_gauges
                 call print_gauges_and_reset_nextLoc(ii)
              end do
