@@ -26,6 +26,8 @@ class FGmaxGrid(object):
     """
 
     def __init__(self):
+        
+        # GeoClaw input values:
         self.point_style = None
         self.npts = None
         self.nx = None
@@ -43,8 +45,20 @@ class FGmaxGrid(object):
         self.xy_fname = None   # optional file name for separate list of points
                              # when point_style==0, distinct from header file
         self.write_xy_fname = False # controls whether xy_fname is created
-                                    # by self.write_input_data, or only header 
+                                    # by self.write_input_data, or only header
+                                    
+        # Other possible GeoClaw inputs:
+        self.x = None
+        self.y = None
+        self.X = None
+        self.Y = None
+        self.Z = None  # for topo DEM values if available
+        self.fgmax_point = None  # for point_style==4
+        self.force_dry_init = None  # =1 if wet, =0 if dry
+        self.dx = None
+        self.dy = None 
 
+        # possible output values that may be available after run:
         self.outdir = '_output'    # where to find GeoClaw output fort.FG*
         self.level = None
         self.X = None
@@ -64,6 +78,15 @@ class FGmaxGrid(object):
         self.hmin = None
         self.hmin_time = None
         self.arrival_time = None
+        
+        # possible derived quantities of interest:
+        self.dz = None
+        self.B0 = None
+        self.eta = None
+        self.h_onshore = None
+        self.id = ''  # identifier
+        self.label = ''  # text for legend
+
 
     def read_input_data(self, input_file_name=None):
         r"""
@@ -345,7 +368,7 @@ class FGmaxGrid(object):
             self.outdir = outdir
     
         # try new style, e.g. fort.FG0001.valuemax
-        fname1 = os.path.join(self.outdir, 'fort.FG%s.valuemax' \
+        fname1 = os.path.join(self.outdir, 'fort.FG%s' \
                 % str(self.fgno).zfill(4))
         if os.path.isfile(fname1):
             fname_style = 'new'
@@ -365,48 +388,80 @@ class FGmaxGrid(object):
         if point_style == 4:
             self.npts = d.shape[0]
             print('+++ point_style == 4, found %i points ' % self.npts)
-    
+
+                    
         if fname_style == 'new':
-            fname = os.path.join(self.outdir, 'fort.FG%s.aux1' \
-                    % str(self.fgno).zfill(4))
+            # includes column for B = topo from aux array
+            cols_expected = [7,9,15]  
         else:
-            fname = os.path.join(self.outdir, 'fort.FG%s.aux1' \
-                    % str(self.fgno))
-
-        if not os.path.isfile(fname):
-            raise IOError("File not found: %s" % fname)
-
-        print("Reading %s ..." % fname)
-        daux = numpy.loadtxt(fname)
-    
-        ncols = d.shape[1]  
-        if ncols not in [6,8,14]:
+            cols_expected = [6,8,14]
+            
+        ncols = d.shape[1]
+        
+        if ncols not in cols_expected:
             raise IOError("*** Unexpected number of columns %s in file %s" \
                     % (ncols, fname))
     
-        ind_x = 0
-        ind_y = 1
-        ind_level = 2
-        ind_h = 3
-        if ncols == 6:
-            ind_h_time = 4
-            ind_arrival_time = 5
-        elif ncols == 8:
-            ind_s = 4
-            ind_h_time = 5
-            ind_s_time = 6
-            ind_arrival_time = 7
-        elif ncols == 14:
-            ind_s = 4
-            ind_hs = 5
-            ind_hss = 6
-            ind_hmin = 7
-            ind_h_time = 8
-            ind_s_time = 9
-            ind_hs_time = 10
-            ind_hss_time = 11
-            ind_hmin_time = 12
-            ind_arrival_time = 13
+        ind_s = None
+        ind_hs = None
+        ind_hss = None
+        ind_hmin = None
+        ind_h_time = None
+        ind_s_time = None
+        ind_hs_time = None
+        ind_hss_time = None
+        ind_hmin_time = None
+        
+        if fname_style == 'new':
+            ind_x = 0
+            ind_y = 1
+            ind_level = 2
+            ind_B = 3  # added in new fname style
+            ind_h = 4
+            if ncols == 7:
+                ind_h_time = 5
+                ind_arrival_time = 6
+            elif ncols == 9:
+                ind_s = 5
+                ind_h_time = 6
+                ind_s_time = 7
+                ind_arrival_time = 8
+            elif ncols == 15:
+                ind_s = 5
+                ind_hs = 6
+                ind_hss = 7
+                ind_hmin = 8
+                ind_h_time = 9
+                ind_s_time = 10
+                ind_hs_time = 11
+                ind_hss_time = 12
+                ind_hmin_time = 13
+                ind_arrival_time = 14
+        else:
+            # original style:
+            ind_x = 0
+            ind_y = 1
+            ind_level = 2
+            ind_h = 3
+            if ncols == 6:
+                ind_h_time = 4
+                ind_arrival_time = 5
+            elif ncols == 8:
+                ind_s = 4
+                ind_h_time = 5
+                ind_s_time = 6
+                ind_arrival_time = 7
+            elif ncols == 14:
+                ind_s = 4
+                ind_hs = 5
+                ind_hss = 6
+                ind_hmin = 7
+                ind_h_time = 8
+                ind_s_time = 9
+                ind_hs_time = 10
+                ind_hss_time = 11
+                ind_hmin_time = 12
+                ind_arrival_time = 13
     
         if point_style in [0,1,4]:
             fg_shape = (self.npts,)
@@ -426,17 +481,34 @@ class FGmaxGrid(object):
         # AMR level used for each fgmax value:
         level = numpy.reshape(d[:,ind_level].astype('int'),fg_shape,order='F')
         
-        topo = []
-        nlevels = daux.shape[1]
-        for i in range(2,nlevels):
-            topoi = numpy.reshape(daux[:,i],fg_shape,order='F')
-            topoi = ma.masked_where(topoi < -1e50, topoi)
-            topo.append(topoi)
+        # Set B = topo array
+        if fname_style == 'new':
+            B = numpy.reshape(d[:,ind_B],fg_shape,order='F')
+        else:
+            # old style was to read all aux arrays and select proper column
+            fname = os.path.join(self.outdir, 'fort.FG%s.aux1' \
+                    % str(self.fgno))
+
+            if not os.path.isfile(fname):
+                raise IOError("File not found: %s" % fname)
+
+            print("Reading %s ..." % fname)
+            daux = numpy.loadtxt(fname,comments='#')
+        
+            ncols = d.shape[1]  
+                
+            topo = []
+            nlevels = daux.shape[1]
+            for i in range(2,nlevels):
+                topoi = numpy.reshape(daux[:,i],fg_shape,order='F')
+                topoi = ma.masked_where(topoi < -1e50, topoi)
+                topo.append(topoi)
+        
+            B = ma.masked_where(level==0, topo[0])  # level==0 ==> never updated
+            levelmax = level.max()
+            for i in range(levelmax):
+                B = numpy.where(level==i+1, topo[i], B)
     
-        B = ma.masked_where(level==0, topo[0])  # level==0 ==> never updated
-        levelmax = level.max()
-        for i in range(levelmax):
-            B = numpy.where(level==i+1, topo[i], B)
     
         mask = (h < -1e50)  # points that were never set
         B = ma.masked_where(mask, B)
@@ -450,9 +522,9 @@ class FGmaxGrid(object):
             return q, q_time
     
         self.h, self.h_time = set_q_time(ind_h, ind_h_time)
-        if ncols > 6:
+        if ind_s:
             self.s, self.s_time = set_q_time(ind_s, ind_s_time)
-        if ncols > 8:
+        if ind_hs:
             self.hs, self.hs_time = set_q_time(ind_hs, ind_hs_time)
             self.hss, self.hss_time = set_q_time(ind_hss, ind_hss_time)
             self.hmin, self.hmin_time = set_q_time(ind_hmin, ind_hmin_time)
@@ -468,7 +540,47 @@ class FGmaxGrid(object):
         self.Y = Y
         self.B = B
         self.h = h
-    
+        
+        self.B0 = B  ## SHOULD MODIFY BY dz!
+        
+        if self.force_dry_init is not None:
+            self.h_onshore = ma.masked_where(self.force_dry_init==0, self.h)
+        else:
+            self.h_onshore = ma.masked_where(self.B0 < 0., self.h)
+
+    def bounding_box(self):
+        x1 = self.X.min()
+        x2 = self.X.max()
+        y1 = self.Y.min()
+        y2 = self.Y.max()
+        return [x1,x2,y1,y2]
+        
+    def convert_lists_to_arrays(self,dx,dy):
+        
+        assert self.point_style in [0,2,4], '*** Require self.point_style in [0,2,4]'
+        
+        x_1d = self.X
+        y_1d = self.Y
+        print('+++ x_1d.shape = ', x_1d.shape)
+        z_1d_arrays = [self.level, self.B, self.h, self.h_time, self.s, self.s_time, 
+                       self.hs, self.hs_time, self.hss, self.hss_time, self.hmin, 
+                       self.hmin_time, self.arrival_time]
+        num_arrays = len(z_1d_arrays)
+        if self.Z is not None:
+            z_1d_arrays.append(self.Z)
+                       
+        X,Y,Z_arrays = lists_to_arrays(x_1d, y_1d, z_1d_arrays, dx, dy)
+        print('+++X.shape = ', X.shape)
+        
+        # unpack:
+        self.level, self.B, self.h, self.h_time, self.s, self.s_time, \
+                self.hs, self.hs_time, self.hss, self.hss_time, self.hmin, \
+                self.hmin_time, self.arrival_time = Z_arrays[:num_arrays]
+        self.X = X
+        self.Y = Y
+        if self.Z is not None:
+            self.Z = Z_arrays[-1]
+                
 
 def adjust_fgmax_1d(x1_desired, x2_desired, x1_domain, dx):
     """

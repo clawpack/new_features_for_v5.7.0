@@ -60,6 +60,7 @@ SOURCES = \
   $(NEWGEO)/fgmax_interpolate0.f90 \
   $(NEWGEO)/fgmax_values.f90 \
   $(NEWGEO)/fgmax_frompatch.f90 \
+  $(NEWGEO)/tick.f \
   $(CLAW)/riemann/src/rpn2_geoclaw.f \
   $(CLAW)/riemann/src/rpt2_geoclaw.f \
   $(CLAW)/riemann/src/geoclaw_riemann_utils.f \

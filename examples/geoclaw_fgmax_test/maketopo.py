@@ -24,8 +24,8 @@ def maketopo():
     Output topography file for the entire domain
     and near-shore in one location.
     """
-    nxpoints=400
-    nypoints=400
+    nxpoints=401
+    nypoints=401
     xlower=-20.e0
     xupper= 20.e0
     ylower= 20.e0

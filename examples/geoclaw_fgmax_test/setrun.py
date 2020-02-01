@@ -7,12 +7,17 @@ that will be read in by the Fortran code.
 """ 
 
 from __future__ import print_function
-import os
+import os, sys
 import numpy as np
 
 from clawpack.geoclaw.data import Rearth  # radius of earth
 from mapper import latlong
 
+new_code = '../../new_python'
+print('Adding %s to path' % new_code)
+sys.path.insert(0, new_code)
+
+import fgmax_tools
 
 #------------------------------
 def setrun(claw_pkg='geoclaw'):
@@ -45,11 +50,6 @@ def setrun(claw_pkg='geoclaw'):
     probdata = rundata.new_UserData(name='probdata',fname='setprob.data')
     probdata.add_param('theta_island', theta_island,  'angle to island')
 
-
-    #------------------------------------------------------------------
-    # GeoClaw specific parameters:
-    #------------------------------------------------------------------
-    rundata = setgeo(rundata)
     
     #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
@@ -124,8 +124,8 @@ def setrun(claw_pkg='geoclaw'):
     if clawdata.output_style==1:
         # Output ntimes frames at equally spaced times up to tfinal:
         # Can specify num_output_times = 0 for no output
-        clawdata.num_output_times = 14
-        clawdata.tfinal = 14000.0
+        clawdata.num_output_times = 8
+        clawdata.tfinal = 4*3600.
         clawdata.output_t0 = True  # output at initial (or restart) time?
         
     elif clawdata.output_style == 2:
@@ -291,9 +291,9 @@ def setrun(claw_pkg='geoclaw'):
     amrdata.amr_levels_max = 5
 
     # List of refinement ratios at each level (length at least amr_level_max-1)
-    amrdata.refinement_ratios_x = [4, 4, 4, 4]
-    amrdata.refinement_ratios_y = [4, 4, 4, 4]
-    amrdata.refinement_ratios_t = [4, 4, 4, 1]
+    amrdata.refinement_ratios_x = [4, 3, 5, 4]
+    amrdata.refinement_ratios_y = [4, 3, 5, 4]
+    amrdata.refinement_ratios_t = [1, 1, 1, 1]
 
 
     # Specify type of each aux variable in amrdata.auxtype.
@@ -354,33 +354,8 @@ def setrun(claw_pkg='geoclaw'):
     y2 = yisland + 0.2
     regions.append([4, 5, 8000., 1.e10,  x1,x2,y1,y2])
 
-
-
-    #  ----- For developers ----- 
-    # Toggle debugging print statements:
-    amrdata.dprint = False      # print domain flags
-    amrdata.eprint = False      # print err est flags
-    amrdata.edebug = False      # even more err est flags
-    amrdata.gprint = False      # grid bisection/clustering
-    amrdata.nprint = False      # proper nesting output
-    amrdata.pprint = False      # proj. of tagged points
-    amrdata.rprint = False      # print regridding summary
-    amrdata.sprint = False      # space/memory output
-    amrdata.tprint = False      # time step reporting each level
-    amrdata.uprint = False      # update/upbnd reporting
-    
-    return rundata
-
-    # end of function setrun
-    # ----------------------
-
-
-#-------------------
-def setgeo(rundata):
-#-------------------
-    """
-    Set GeoClaw specific runtime parameters.
-    """
+    # -----------------------------------------------
+    # GeoClaw specific parameters:
 
     try:
         geo_data = rundata.geo_data
@@ -405,7 +380,7 @@ def setgeo(rundata):
 
     # Refinement settings
     refinement_data = rundata.refinement_data
-    refinement_data.variable_dt_refinement_ratios = False
+    refinement_data.variable_dt_refinement_ratios = True
     refinement_data.wave_tolerance = 0.01
     refinement_data.deep_depth = 100.0
     refinement_data.max_level_deep = 3
@@ -430,16 +405,49 @@ def setgeo(rundata):
     # for qinit perturbations, append lines of the form: (<= 1 allowed for now!)
     #   [minlev, maxlev, fname]
 
-    # == fixedgrids.data values ==
-    rundata.fixed_grid_data.fixedgrids = []
-    fixedgrids = rundata.fixed_grid_data.fixedgrids
-    # for fixed grids append lines of the form
-    # [t1,t2,noutput,x1,x2,y1,y2,xpoints,ypoints,\
-    #  ioutarrivaltimes,ioutsurfacemax]
 
     # == fgmax.data values ==
     fgmax_files = rundata.fgmax_data.fgmax_files
+    # set num_fgmax_val = 1 to save only max depth,
+    #                     2 to also save max speed,
+    #                     5 to also save max hs,hss,hmin
+    rundata.fgmax_data.num_fgmax_val = 2  # Save depth and speed
+
     # for fixed grids append to this list names of any fgmax input files
+    fg = fgmax_tools.FGmaxGrid()
+    fg.point_style = 2  # uniform rectangular x-y grid  
+    fg.x1 = 14.25
+    fg.x2 = 14.65
+    fg.y1 = 50.10
+    fg.y2 = 50.35
+    fg.dx = 15/ 3600.  # desired resolution of fgmax grid
+    fg.min_level_check = amrdata.amr_levels_max # which levels to monitor max on
+    fg.tstart_max = 8000.  # just before wave arrives
+    fg.tend_max = 1.e10    # when to stop monitoring max values
+    fg.dt_check = 20.      # how often to update max values
+    fg.input_file_name = 'fgmax_island_grid.txt'
+    fg.write_input_data()  # create input_file needed by geoclaw
+    fgmax_files.append(fg.input_file_name)  # written to fgmax.data
+
+
+
+    #  ----- For developers ----- 
+    # Toggle debugging print statements:
+    amrdata.dprint = False      # print domain flags
+    amrdata.eprint = False      # print err est flags
+    amrdata.edebug = False      # even more err est flags
+    amrdata.gprint = False      # grid bisection/clustering
+    amrdata.nprint = False      # proper nesting output
+    amrdata.pprint = False      # proj. of tagged points
+    amrdata.rprint = False      # print regridding summary
+    amrdata.sprint = False      # space/memory output
+    amrdata.tprint = False      # time step reporting each level
+    amrdata.uprint = False      # update/upbnd reporting
+    
+    return rundata
+
+    # end of function setrun
+    # ----------------------
 
 
     return rundata
@@ -453,7 +461,7 @@ if __name__ == '__main__':
     rundata.write()
     
     # remake topo in case island location theta_island was changed above:
-    import maketopo
-    maketopo.maketopo()
-    maketopo.makeqinit()
+    #import maketopo
+    #maketopo.maketopo()
+    #maketopo.makeqinit()
     
