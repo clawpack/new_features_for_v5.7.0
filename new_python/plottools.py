@@ -44,22 +44,30 @@ def pcolorcells(X, Y, Z, ax=None, **kwargs):
     
     - This should work also if x and/or y is decreasing rather than increasing.  
     
-    - Currently assumes x,y are 1d arrays, could extend to also allow 2d
-      arrays as input.
+    - Should also work regardless of index order.
       
     """
     
     from matplotlib import pyplot as plt
     import numpy as np
     
-    # If X is 2d extract proper 1d slice:
+    transposeZ = False # default for 1d arrays X,Y, as in pcolormesh
+    
     if X.ndim == 1:
         x = X
+        Zshapex = Z.shape[1]
+        assert len(x) in [Zshapex, Zshapex+1], '*** Z has wrong shape, transpose?'
+        
+    # If X is 2d extract proper 1d slice:
     elif X.ndim == 2:
         if X[0,0] == X[0,1]:
             x = X[:,0]
+            transposeZ = True
+            Zshapex = Z.shape[0]
         else:
             x = X[0,:]
+            transposeZ = False
+            Zshapex = Z.shape[1]
             
     # If Y is 2d extract proper 1d slice:
     if Y.ndim == 1:
@@ -67,11 +75,17 @@ def pcolorcells(X, Y, Z, ax=None, **kwargs):
     elif Y.ndim == 2:
         if Y[0,0] == Y[0,1]:
             y = Y[:,0]
+            assert not transposeZ, '*** X and Y not consistent'
         else:
-            y = Y[0,:]                    
+            y = Y[0,:]             
+            assert transposeZ, '*** X and Y not consistent' 
+    
+    x_at_cell_centers = (len(x) == Zshapex)
+        
+    if not x_at_cell_centers:
+        assert (len(x) == Zshapex + 1), \
+                '*** X should be same shape as Z or one larger'
 
-    #dx = x[1]-x[0]
-    #dy = y[1]-y[0]
     
     diffx = np.diff(x)
     diffy = np.diff(y)
@@ -83,28 +97,24 @@ def pcolorcells(X, Y, Z, ax=None, **kwargs):
     if diffy.max()-diffy.min() > 1e-3*dy:
         raise ValueError("y must be equally spaced for pcolorcells")
 
-
-    if len(x) == Z.shape[1]:
+    if x_at_cell_centers:
         # cell centers, so xedge should be expanded by dx/2 on each end:
         xedge = np.arange(x[0]-0.5*dx, x[-1]+dx, dx)
-    elif len(x) == Z.shape[1]+1:
+        yedge = np.arange(y[0]-0.5*dy, y[-1]+dy, dy)
+    else:
         # assume x already contains edge values
         xedge = x
-    else:
-        raise ValueError('x has unexpected length')
-
-    if len(y) == Z.shape[0]:
-        # cell centers, so xedge should be expanded by dx/2 on each end:
-        yedge = np.arange(y[0]-0.5*dy, y[-1]+dy, dy)
-    elif len(y) == Z.shape[0]+1:
-        # assume x already contains edge values
         yedge = y
-    else:
-        raise ValueError('y has unexpected length')
         
-    if ax is None:
-        pc = plt.pcolormesh(xedge, yedge, Z, **kwargs)
+    if transposeZ:
+        if ax is None:
+            pc = plt.pcolormesh(xedge, yedge, Z.T, **kwargs)
+        else:
+            pc = ax.pcolormesh(xedge, yedge, Z.T, **kwargs)
     else:
-        pc = ax.pcolormesh(xedge, yedge, Z, **kwargs)
+        if ax is None:
+            pc = plt.pcolormesh(xedge, yedge, Z, **kwargs)
+        else:
+            pc = ax.pcolormesh(xedge, yedge, Z, **kwargs)
     
     return pc
