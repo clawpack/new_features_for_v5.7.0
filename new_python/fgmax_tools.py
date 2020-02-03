@@ -28,6 +28,7 @@ class FGmaxGrid(object):
     def __init__(self):
         
         # GeoClaw input values:
+        self.id = ''  # identifier, optional
         self.point_style = None
         self.npts = None
         self.nx = None
@@ -84,7 +85,6 @@ class FGmaxGrid(object):
         self.B0 = None
         self.eta = None
         self.h_onshore = None
-        self.id = ''  # identifier
         self.label = ''  # text for legend
 
 
@@ -216,25 +216,17 @@ class FGmaxGrid(object):
             # 1d transect of points
             x1,x2 = self.x1, self.x2
             y1,y2 = self.y1, self.y2
+            # require self.npts to be set and don't set dx since
+            # ambiguous for general transect in lat-long.
             if self.npts is None:
-                dx = self.dx
-                npts = int(round(sqrt((x2-x1)**2 + (y2-y1)**2)/dx)) + 1
-                if abs((npts-1)*dx + x1 - x2) > 1e-6:
-                    print("Warning: abs((npts-1)*dx + x1 - x2) = ", \
-                          abs((npts-1)*dx + x1 - x2))
-                    x2 = x1 + dx*(npts-1)
-                    y2 = y1 + dx*(npts-1)
-                    print("         resetting x2 to %g" % x2)
-                    print("         resetting y2 to %g" % y2)
+                raise ValueError('With point_style==1 must set set npts')
             else:
                 npts = self.npts
-                dx = sqrt((x2-x1)**2 + (y2-y1)**2)/(npts+1.)
                 if self.dx is not None:
-                    print("*** Warning: dx specified over-ridden by: ",dx)
+                    print("*** Warning: With point_style==1 cannot set dx")
         
         
             print("Creating 1d fixed grid with %s points" % npts)
-            print("   dx = %g" % dx)
         
         
             fid.write("%i                 # npts\n" % (npts))
