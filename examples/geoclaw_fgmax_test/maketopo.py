@@ -18,29 +18,34 @@ theta_island = probdata.theta_island
 print("theta_island = ",theta_island)
 
 (xisland,yisland) = latlong(1600.e3, theta_island, 40., Rearth)
+print('Island is centered at: (%.3f, %.3f)' % (xisland,yisland))
 
 def maketopo():
     """
     Output topography file for the entire domain
     and near-shore in one location.
     """
+    # 6 arcminute resolution:
     nxpoints=401
     nypoints=401
     xlower=-20.e0
     xupper= 20.e0
     ylower= 20.e0
     yupper= 60.e0
-    outfile= "ocean.topotype2"
-    topotools.topo2writer(outfile,topo,xlower,xupper,ylower,yupper,nxpoints,nypoints)
+    outfile= "ocean.tt3"
+    topotools.topo3writer(outfile,topo,xlower,xupper,ylower,yupper,nxpoints,nypoints)
 
-    nxpoints=200
-    nypoints=200
-    xlower= xisland - 1.
-    xupper= xisland + 1.
-    ylower= yisland - 1.
-    yupper= yisland + 1.
-    outfile= "island.topotype2"
-    topotools.topo2writer(outfile,topo,xlower,xupper,ylower,yupper,nxpoints,nypoints)
+    # round off lat/lon to 2 digits so even multiple of 0.01 degree = 36 arcsec
+    xlower= round(xisland - 1., 2)
+    xupper= round(xisland + 1., 2)
+    ylower= round(yisland - 1., 2)
+    yupper= round(yisland + 1., 2)
+    # 18 arcsecond resolution:
+    nxpoints = int((xupper-xlower) * 3600. / 18.) + 1
+    nypoints = int((yupper-ylower) * 3600. / 18.) + 1
+    print('island topofile has %i by %i points' % (nxpoints,nypoints))
+    outfile= "island.tt3"
+    topotools.topo3writer(outfile,topo,xlower,xupper,ylower,yupper,nxpoints,nypoints)
 
 def makeqinit():
     """

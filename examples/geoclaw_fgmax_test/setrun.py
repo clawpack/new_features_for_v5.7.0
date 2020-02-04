@@ -261,7 +261,7 @@ def setrun(claw_pkg='geoclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 0
+    clawdata.checkpt_style = 1
 
     if clawdata.checkpt_style == 0:
       # Do not checkpoint at all
@@ -407,13 +407,21 @@ def setrun(claw_pkg='geoclaw'):
 
 
     # == fgmax.data values ==
-    fgmax_files = rundata.fgmax_data.fgmax_files
     # set num_fgmax_val = 1 to save only max depth,
     #                     2 to also save max speed,
     #                     5 to also save max hs,hss,hmin
     rundata.fgmax_data.num_fgmax_val = 2  # Save depth and speed
 
-    # for fixed grids append to this list names of any fgmax input files
+    fgmax_list = rundata.fgmax_data.fgmax_list  # empty list to start
+
+    # Now append to this list objects of class fgmax_tools.FGmaxGrid
+    # specifying any fgmax grids.
+    
+    # Here several different ones are specified to illustrate:
+    
+    tstart_max = 8000.  # when to start monitoring fgmax grids
+
+    # Points on a uniform 2d grid:
     fg = fgmax_tools.FGmaxGrid()
     fg.point_style = 2  # uniform rectangular x-y grid  
     fg.x1 = 14.25
@@ -422,15 +430,60 @@ def setrun(claw_pkg='geoclaw'):
     fg.y2 = 50.35
     fg.dx = 15/ 3600.  # desired resolution of fgmax grid
     fg.min_level_check = amrdata.amr_levels_max # which levels to monitor max on
-    fg.tstart_max = 8000.  # just before wave arrives
+    fg.tstart_max = tstart_max  # just before wave arrives
     fg.tend_max = 1.e10    # when to stop monitoring max values
     fg.dt_check = 20.      # how often to update max values
-    fg.input_file_name = 'fgmax_island_grid.txt'
-    fg.write_input_data()  # create input_file needed by geoclaw
-    fgmax_files.append(fg.input_file_name)  # written to fgmax.data
+    fgmax_list.append(fg)  # written to fgmax_new.data
 
+    # Points on a 1d transect from (x1,y1) to (x2,y2):
+    fg = fgmax_tools.FGmaxGrid()
+    fg.point_style = 1  # equally spaced points on a transect
+    fg.x1 = 14.25
+    fg.x2 = 14.65
+    fg.y1 = 50.10
+    fg.y2 = 50.35
+    fg.npts = 50
+    fg.min_level_check = amrdata.amr_levels_max # which levels to monitor max on
+    fg.tstart_max = tstart_max  # just before wave arrives
+    fg.tend_max = 1.e10    # when to stop monitoring max values
+    fg.dt_check = 20.      # how often to update max values
+    fgmax_list.append(fg)  # written to fgmax_new.data
 
+    # fgmax grid point_style==4 means grid specified as topo_type==3 file:
+    fg = fgmax_tools.FGmaxGrid()
+    fg.point_style = 4
+    fg.min_level_check = amrdata.amr_levels_max # which levels to monitor max on
+    fg.tstart_max = tstart_max  # just before wave arrives
+    fg.tend_max = 1.e10    # when to stop monitoring max values
+    fg.dt_check = 20.      # how often to update max values
+    fg.xy_fname = 'fgmax_pts_island.data'  # file of 0/1 values in tt3 format
+    fgmax_list.append(fg)  # written to fgmax_new.data
 
+    # fgmax grid point_style==0 means list of points:
+    fg = fgmax_tools.FGmaxGrid()
+    fg.point_style = 0
+    fg.min_level_check = amrdata.amr_levels_max # which levels to monitor max on
+    fg.tstart_max = tstart_max  # just before wave arrives
+    fg.tend_max = 1.e10    # when to stop monitoring max values
+    fg.dt_check = 20.      # how often to update max values
+    # can set list of points here:
+    fg.npts = 2
+    fg.X = np.array([14.4, 14.5])
+    fg.Y = np.array([50.13, 50.13])
+    fgmax_list.append(fg)  # written to fgmax_new.data
+
+    # fgmax grid point_style==0 means list of points:
+    fg = fgmax_tools.FGmaxGrid()
+    fg.point_style = 0
+    fg.min_level_check = amrdata.amr_levels_max # which levels to monitor max on
+    fg.tstart_max = tstart_max  # just before wave arrives
+    fg.tend_max = 1.e10    # when to stop monitoring max values
+    fg.dt_check = 20.      # how often to update max values
+    # can specify that list of points is in a different file:
+    fg.npts = 0
+    fg.xy_fname = 'fgmax_points_list.data'
+    fgmax_list.append(fg)  # written to fgmax_new.data
+    
     #  ----- For developers ----- 
     # Toggle debugging print statements:
     amrdata.dprint = False      # print domain flags
@@ -449,10 +502,6 @@ def setrun(claw_pkg='geoclaw'):
     # end of function setrun
     # ----------------------
 
-
-    return rundata
-    # end of function setgeo
-    # ----------------------
 
 if __name__ == '__main__':
     # Set up run-time parameters and write all data files.

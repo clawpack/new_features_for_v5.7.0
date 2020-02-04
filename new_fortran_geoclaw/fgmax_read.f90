@@ -1,29 +1,34 @@
 
-!subroutine fgmax_read(fname,ifg)
 subroutine fgmax_read(fgmax_unit,ifg)
 
     ! Read in data file describing any fixed grids.
-    ! The file is assumed to have the form:
+    ! Modified for v5.7.0 to read all data from fgmax_grids.data
+    ! This code now looks for the data for fgmax grid number ifg.
+    
+    ! The information is assumed to have the form:
     ! 
     ! tstart_max  # start time for monitoring this fgrid.
     ! tend_max    # end time for monitoring this fgrid.
     ! dt_check    # desired maximum time increment between updating max values.
     ! min_level_check # minimum level to check for monitoring values/arrivals
-    ! arrival_tol           # tolerance for identifying arrival.
-    ! 
-    ! point_style   # 0 ==> list of points, 1 ==> 1d transect,  2 ==> 2d grid, 3 ==> quadrilateral
+    ! arrival_tol           # tolerance for identifying arrival. 
+    ! point_style   # indicating how fgmax points are specified on this grid
+    
     ! if point_style==0 this is followed by:
     !   npts        # number of grid points
-    !   fname of file containing:    !! MODIFIED from original
     !   x(1), y(1)  # first grid point
     !   ...
     !   x(npts), y(npts)  # last grid point
+    
+    ! OR if npts==0, instead of the list the next line after npts should be
+    !   xy_fname  # path to file containing npts followed by list of points.
+
     ! if point_style==1:
-    !   npts
+    !   npts       # desired number of points on transect
     !   x1, y1     # first point
     !   x2, y2     # last point
     ! if point_style==2:
-    !   nx, ny
+    !   nx, ny     # desired number of points in x and y
     !   x1, y1     # lower left corner of cartesian grid
     !   x2, y2     # upper right corner of cartesian grid
     ! if point_style==3:
@@ -33,15 +38,17 @@ subroutine fgmax_read(fgmax_unit,ifg)
     !   x3, y3     # third corner
     !   x4, y4     # fourth corner
     ! if point_style==4:
-    !   read in a topotype=3 file with 0/1 values, 1 at fgmax points
+    !   xy_fname   # a file with topo_type==3 format specifying Z = 0 or 1,
+    !              # with 1 at fgmax points
 
     use fgmax_module
     use amr_module, only: mxnest
     use topo_module, only: read_topo_header
 
     implicit none
-    !character(150), intent(in) :: fname
     integer, intent(in) :: ifg, fgmax_unit
+    
+    ! local
     character(150) :: fname
     integer :: k,i,j,point_style,n12,n23
     real(kind=8) :: x1,x2,y1,y2,yj
@@ -55,20 +62,6 @@ subroutine fgmax_read(fgmax_unit,ifg)
     real(kind=8) :: fg_y
     integer :: fg_npts_max, jj
 
-
-    if (.false.) then
-        fname2 = 'NOT_SET'
-        inquire(file=trim(fname),exist=foundFile)
-        if (.not. foundFile) then
-          write(*,*) 'Missing fgmax file...'
-          write(*,*) 'Looking for: ',trim(fname)
-          stop
-          endif
-
-        open(unit=FG_UNIT,file=trim(fname),status='old')
-    endif
-
-    write(6,*) '+++ ifg = ',ifg
     
     fg => FG_fgrids(ifg)   ! point to next element of array of fgrids
     read(fgmax_unit,*) fg%fgno
@@ -79,30 +72,31 @@ subroutine fgmax_read(fgmax_unit,ifg)
     read(fgmax_unit,*) fg%arrival_tol
     read(fgmax_unit,*) point_style
     fg%point_style = point_style
+    
     if (point_style == 0) then
         read(fgmax_unit,*) fg%npts
-        if (fg%npts .ne. 0) then
-            write(6,*) '*** expected fg%npts == 0'
-            stop
-        endif
         
-        !if (fg%npts == 0) then
-        if (.true.) then
+        if (fg%npts .ne. 0) then
+            ! points are also in fgmax_grids.data file:
+            allocate(fg%x(1:fg%npts), fg%y(1:fg%npts))
+            do k=1,fg%npts
+                read(fgmax_unit,*) fg%x(k), fg%y(k)
+                enddo
+        else
             ! in this case fname2 is read, separate file containing x,y values:
             read(fgmax_unit,*) fname2
-            !close(unit=FG_UNIT)
             write(6,*) 'Reading fgmax points from '
             write(6,*) '    ',trim(fname2)
             open(unit=FG_UNIT,file=trim(fname2),status='old')
             read(FG_UNIT,*) fg%npts
             write(6,*) 'npts = ',fg%npts
-            endif
 
-        allocate(fg%x(1:fg%npts), fg%y(1:fg%npts))
-        do k=1,fg%npts
-            read(FG_UNIT,*) fg%x(k), fg%y(k)
-            enddo
-        close(FG_UNIT)
+            allocate(fg%x(1:fg%npts), fg%y(1:fg%npts))
+            do k=1,fg%npts
+                read(FG_UNIT,*) fg%x(k), fg%y(k)
+                enddo
+            close(FG_UNIT)
+        endif
 
     else if (point_style == 1) then
         read(fgmax_unit,*) fg%npts
@@ -201,8 +195,6 @@ subroutine fgmax_read(fgmax_unit,ifg)
             enddo
         fg%npts = k
         write(6,*) 'npts = ',fg%npts
-        close(FG_UNIT)
-
             
     else
         write(6,*) '*** Unexpected value of point_style in fgmax_read: ',point_style
