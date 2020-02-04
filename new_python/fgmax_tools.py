@@ -41,7 +41,7 @@ class FGmaxGrid(object):
                                 # max values
         self.min_level_check = None    # which levels to monitor max on
         self.arrival_tol = 1.e-2       # tolerance for flagging arrival
-        self.input_file_name = 'fgmax.txt'  # file for GeoClaw input data
+        #self.input_file_name = 'fgmax.txt'  # file for GeoClaw input data
         self.fgno = 1  # FG number
         self.xy_fname = None   # optional file name for separate list of points
                              # when point_style==0, distinct from header file
@@ -88,22 +88,38 @@ class FGmaxGrid(object):
         self.label = ''  # text for legend
 
 
-    def read_input_data(self, input_file_name=None):
-        r"""
-        Read input data from a file like *fgmax.txt* that
-        might have been created by *write_input_data*.
+        
+    def read_fgmax_grids_data(self, fgno):
         """
-
-        if input_file_name is not None:
-            self.input_file_name = input_file_name
-        fgmax_input = open(self.input_file_name).readlines()
-
+        Read input info for fgmax grid number fgno from the data file
+        fgmax_grids.data, which should have been created by setrun.py.
+        This file now contains info about all fgmax grids.
+        """
+        
+        data_file = 'fgmax_grids.data'
+        lines = open(data_file).readlines()
+        #print('+++ opened fgmax_new.data with %i lines' % len(lines))
+        fgmax_input = None
+        for lineno,line in enumerate(lines):
+            if 'fgno' in line:
+                if int(line.split()[0]) == fgno:
+                    fgmax_input = lines[lineno+1:]
+                    #print('Found line %i: %s' % (lineno,line))
+                    break
+                    
+        if fgmax_input is None:
+            raise ValueError('fgmax grid fgno = %i not found in %s' \
+                             % (fgno, data_file))
+                    
+        self.fgno = fgno
         self.tstart_max = float(fgmax_input[0].split()[0])
         self.tend_max = float(fgmax_input[1].split()[0])
         self.dt_check = float(fgmax_input[2].split()[0])
         self.min_level_check = int(fgmax_input[3].split()[0])
         self.arrival_tol = float(fgmax_input[4].split()[0])
         self.point_style = point_style = int(fgmax_input[5].split()[0])
+        print('Reading input for fgno=%i, point_style = %i ' \
+                % (self.fgno, self.point_style))
         if point_style == 0:
             self.npts = npts = int(fgmax_input[6].split()[0])
             if npts == 0:
@@ -118,7 +134,14 @@ class FGmaxGrid(object):
                 self.npts = npts = len(self.X)
                 print('Read %i x,y points from \n    %s' % (npts, self.xy_fname))
             else:
-                self.X, self.Y = numpy.loadtxt(fgmax_input, skiprows=7, unpack=True)
+                X = []; Y = []
+                for k in range(7,7+npts):
+                    xk = float(fgmax_input[k].split()[0])
+                    yk = float(fgmax_input[k].split()[1])
+                    X.append(xk)
+                    Y.append(yk)
+                self.X = numpy.array(X)
+                self.Y = numpy.array(Y)
         elif point_style == 1:
             self.npts = npts = int(fgmax_input[6].split()[0])
             self.x1 = float(fgmax_input[7].split()[0])
@@ -156,14 +179,8 @@ class FGmaxGrid(object):
             # self.npts = npts = len(self.X)
             # print('Read %i x,y points from \n    %s' % (npts, self.xy_fname))
 
-    def write_input_data(self, input_file_name=None):
-        r"""
-        Write input data to a file like *fgmax.txt* that
-        will be read in by GeoClaw as input data.
-        """
 
-        if input_file_name is not None:
-            self.input_file_name = input_file_name
+    def write_to_fgmax_data(self, fid):
 
         print("---------------------------------------------- ")
         point_style = self.point_style
@@ -172,23 +189,26 @@ class FGmaxGrid(object):
                 % point_style)
 
         # write header, independent of point_style:
-        fid = open(self.input_file_name,'w')
+        #fid = open(self.input_file_name,'w')
+        fid.write("\n")
+        fid.write("%i                           # fgno\n" % self.fgno)
         fid.write("%16.10e            # tstart_max\n"  % self.tstart_max)
         fid.write("%16.10e            # tend_max\n"  % self.tend_max)
         fid.write("%16.10e            # dt_check\n" % self.dt_check)
         fid.write("%i %s              # min_level_check\n" \
-                            % (self.min_level_check,16*" "))
+                            % (self.min_level_check,12*" "))
 
         fid.write("%16.10e            # arrival_tol\n" % self.arrival_tol)
         fid.write("%i %s              # point_style\n" \
-                            % (self.point_style,16*" "))
+                            % (self.point_style,12*" "))
 
+        print('fgmax grid %i has point_style = %i' % (self.fgno, point_style))
 
         if point_style == 0:
             if self.xy_fname is not None:
                 fid.write("0         # npts==0 ==> points in this file:\n")
                 fid.write("'%s'\n" % self.xy_fname)
-                print("Created header file only, points should be in file:")
+                print("points should be in file:")
                 print("   %s" % self.xy_fname)
                 if self.write_xy_fname:
                     if self.Z is not None:
@@ -199,18 +219,17 @@ class FGmaxGrid(object):
                                   header='%8i' % len(self.X), 
                                   comments='', fmt='%24.14e')
             else:
+                #print("+++ expecting xy_fname")
                 # list of points
                 npts = self.npts
             
-                print("Creating unstructured grid of %s points" % npts)
+                print("unstructured grid of %s points" % npts)
             
                 fid.write("%i                 # npts\n" % (npts))
                 for k in range(npts):
                     fid.write("%22.12f   %22.12f \n" % (self.X[k],self.Y[k]))
-            fid.close()
-            
-            print("Created file ", self.input_file_name)
-            
+            #fid.close()
+                        
 
         elif point_style==1:
             # 1d transect of points
@@ -226,16 +245,16 @@ class FGmaxGrid(object):
                     print("*** Warning: With point_style==1 cannot set dx")
         
         
-            print("Creating 1d fixed grid with %s points" % npts)
+            print("1d fixed grid with %s points" % npts)
         
         
             fid.write("%i                 # npts\n" % (npts))
             fid.write("%g   %g            # x1, y1\n" % (x1,y1))
             fid.write("%g   %g            # x2, y2\n" % (x2,y2))
-            fid.close()
+            #fid.close()
             
         
-            print("Created file ", self.input_file_name)
+            #print("Created file ", self.input_file_name)
             print("   specifying fixed grid with %i points equally spaced from " \
                     % npts)
             print("   (%g,%g)  to  (%g,%g)" % (x1,y1,x2,y2))
@@ -289,10 +308,10 @@ class FGmaxGrid(object):
                                 % (nx,ny,10*" "))
             fid.write("%16.10e   %20.10e            # x1, y1\n" % (x1,y1))
             fid.write("%16.10e   %20.10e            # x2, y2\n" % (x2,y2))
-            fid.close()
+            #fid.close()
             
         
-            print("Created file ", self.input_file_name)
+            #print("Created file ", self.input_file_name)
             print("   specifying fixed grid with shape %i by %i, with  %i points" \
                     % (nx,ny,npts))
             print("   lower left  = (%15.10f,%15.10f)" % (x1,y1))
@@ -300,7 +319,7 @@ class FGmaxGrid(object):
             print("   dx = %15.10e,  dy = %15.10e" % (dx,dy))
         
             xy = [x1,x2,y1,y2]
-            fname_root = os.path.splitext(self.input_file_name)[0]
+            fname_root = 'FGmaxGrid%s' % str(self.fgno).zfill(4)
             kml_file = fname_root + '.kml'
             kmltools.box2kml(xy, kml_file, fname_root, color='8888FF')
 
@@ -321,10 +340,10 @@ class FGmaxGrid(object):
             fid.write("%16.10e   %20.10e            # x2, y2\n" % (x2,y2))
             fid.write("%16.10e   %20.10e            # x3, y3\n" % (x3,y3))
             fid.write("%16.10e   %20.10e            # x4, y4\n" % (x4,y4))
-            fid.close()
+            #fid.close()
             
         
-            print("Created file ", self.input_file_name)
+            #print("Created file ", self.input_file_name)
             print("   specifying fixed grid as a quadrilateral")
             print("       %i by %i, with  %i points" \
                     % (self.n12,self.n23,npts))
@@ -341,11 +360,12 @@ class FGmaxGrid(object):
         elif point_style == 4:
             if self.xy_fname is not None:
                 fid.write("'%s'\n" % self.xy_fname)
-                print("Created header file only, points should be in file:")
+                print("points should be in file:")
                 print("   %s" % self.xy_fname)
-                fid.close()
+            else:
+                raise ValueError('for point_style==4, require xy_fname')
 
-    def read_output(self, fgno=None, outdir=None):
+    def read_output(self, fgno=None, outdir=None, verbose=True):
         r"""
         Read the GeoClaw results on the fgmax grid numbered *fgno*.
         """
@@ -379,7 +399,7 @@ class FGmaxGrid(object):
         
         if point_style == 4:
             self.npts = d.shape[0]
-            print('+++ point_style == 4, found %i points ' % self.npts)
+            print('point_style == 4, found %i points ' % self.npts)
 
                     
         if fname_style == 'new':
@@ -532,13 +552,33 @@ class FGmaxGrid(object):
         self.Y = Y
         self.B = B
         self.h = h
-        
-        self.B0 = B  ## SHOULD MODIFY BY dz!
-        
-        if self.force_dry_init is not None:
-            self.h_onshore = ma.masked_where(self.force_dry_init==0, self.h)
-        else:
-            self.h_onshore = ma.masked_where(self.B0 < 0., self.h)
+
+        # do not set these, leave for user to do as desired:
+        if 0:
+            self.B0 = B  ## SHOULD MODIFY BY dz!
+            
+            if self.force_dry_init is not None:
+                self.h_onshore = ma.masked_where(self.force_dry_init==0, self.h)
+            else:
+                self.h_onshore = ma.masked_where(self.B0 < 0., self.h)
+            
+        if point_style==4:
+            #print('Returning lists, convert to masked arrays based on input grid')
+            #print('   using to_arrays() function')
+            try:
+                self.ps4_to_arrays(verbose=verbose)
+            except:
+                print('*** Problem converting from 1d lists to 2d arrays,\n' \
+                      + '    Trying to map onto grid specified by:\n    ', \
+                      self.xy_fname)
+                raise
+                
+        if self.X.ndim==2:
+            self.x = self.X[0,:]
+        if self.Y.ndim==2:
+            self.y = self.Y[:,0]
+                      
+            
 
     def bounding_box(self):
         x1 = self.X.min()
@@ -547,7 +587,66 @@ class FGmaxGrid(object):
         y2 = self.Y.max()
         return [x1,x2,y1,y2]
         
+    def ps4_to_arrays(self, verbose=True):
+        """
+        for point_style==4, convert lists of fgmax values into masked arrays
+        based on the topo_style==3 file self.xy_fname that was used to specify
+        the fgmax points in the GeoClaw run.
+        """
+        
+        from numpy import ma
+        assert self.point_style==4, '*** Requires point_style==4'
+        
+        if self.X.ndim==2 or self.Y.ndim==2:
+            print('*** X and Y already 2d, not converting')
+            return
+            
+        x_1d = self.X
+        y_1d = self.Y
+                
+        if verbose:
+            print('Will map fgmax points onto masked arrays defined by file:')
+            print('     %s' % self.xy_fname)
+            
+        pts_chosen = topotools.Topography(path=self.xy_fname, topo_type=3)
+        X = pts_chosen.X
+        Y = pts_chosen.Y
+        mask = numpy.logical_not(pts_chosen.Z)
+        x1 = X.min()
+        y1 = Y.min()
+            
+        # possible arrays from GeoClaw output to convert:           
+        zarrays = ['level','B','h','h_time','s','s_time','hs','hs_time',\
+                   'hss','hss_time','hmin','hmin_time','arrival_time']
+                    
+        dx = X[0,1] - X[0,0]
+        dy = Y[1,0] - Y[0,0]
+        if verbose:
+            print('Deduced dx = %g, dy = %g'  % (dx,dy))
+        
+        for attr in zarrays:
+            z_1d = getattr(self, attr, None)
+            if z_1d is None:
+                if verbose: print('not converting attribute %s == None' % attr)
+            else:
+                Z = ma.masked_array(data=numpy.empty(X.shape), mask=True)
+                for k in range(len(x_1d)):
+                    i = int(round((x_1d[k]-x1)/dx))
+                    j = int(round((y_1d[k]-y1)/dy))
+                    Z[j,i] = z_1d[k]
+                if 0:
+                    if not numpy.alltrue(mask == Z.mask):
+                        print('*** converting to arrays gave unexpected mask for')
+                        print('    Z array =  %s' % attr)
+                setattr(self, attr, Z)
+                if verbose: print('converted %s to 2d array' % attr)
+
+        self.X = X
+        self.Y = Y
+            
+        
     def convert_lists_to_arrays(self,dx,dy):
+        """Old version"""
         
         assert self.point_style in [0,2,4], '*** Require self.point_style in [0,2,4]'
         
@@ -556,7 +655,7 @@ class FGmaxGrid(object):
         print('+++ x_1d.shape = ', x_1d.shape)
         z_1d_arrays = [self.level, self.B, self.h, self.h_time, self.s, self.s_time, 
                        self.hs, self.hs_time, self.hss, self.hss_time, self.hmin, 
-                       self.hmin_time, self.arrival_time]
+                       self.hmin_time, self.arrival_time, self.B0, self.h_onshore]
         num_arrays = len(z_1d_arrays)
         if self.Z is not None:
             z_1d_arrays.append(self.Z)
@@ -567,12 +666,36 @@ class FGmaxGrid(object):
         # unpack:
         self.level, self.B, self.h, self.h_time, self.s, self.s_time, \
                 self.hs, self.hs_time, self.hss, self.hss_time, self.hmin, \
-                self.hmin_time, self.arrival_time = Z_arrays[:num_arrays]
+                self.hmin_time, self.arrival_time, self.B0, self.h_onshore \
+               = Z_arrays[:num_arrays]
         self.X = X
         self.Y = Y
         if self.Z is not None:
             self.Z = Z_arrays[-1]
-                
+    
+    def interp_dz(self,dtopo_path,dtopo_type):
+        """
+        Compute approximate values of deformation dz on X,Y grid using
+        a specified dtopo file.
+        Also calculates B0 = B - dz, attempting to recover the pre-event
+        topography from the GeoClaw run topography stored in B.
+        """
+        from clawpack.geoclaw import dtopotools
+        from scipy.interpolate import RegularGridInterpolator
+
+        dtopo = dtopotools.DTopography(dtopo_path, dtopo_type=dtopo_type)
+        x1d = dtopo.X[0,:]
+        y1d = dtopo.Y[:,0]
+        dtopo_func = RegularGridInterpolator((x1d,y1d), dtopo.dZ[-1,:,:].T, 
+                        method='linear', bounds_error=False, fill_value=0.)
+        dz = dtopo_func(list(zip(numpy.ravel(self.X), numpy.ravel(self.Y))))
+        self.dz = numpy.reshape(dz, self.X.shape)
+        print('Over fgmax extent, min(dz) = %.2f m, max(dz) = %.2f m' \
+             % (dz.min(), dz.max()))
+             
+        # leave this for user to do if desired:
+        # self.B0 = self.B - self.dz
+
 
 def adjust_fgmax_1d(x1_desired, x2_desired, x1_domain, dx):
     """
@@ -856,18 +979,35 @@ def plot_fgmax_masked_topo(masked_topo,zmin=None,zmax=None,ax=None,
         print("Created %s" % png_fname)
         plt.close(500)
         
-def lists_to_arrays(x_1d, y_1d, z_1d_arrays, dx, dy):
+def lists_to_arrays(x_1d, y_1d, z_1d_arrays, dx=None, dy=None):
     """
     convert lists of fgmax points to uniform grids with extent given by the
     min and max of x_1d, y_1d.
     x,y values are assumed to lie on a grid with spacing dx,dy.
+    If dx, dy not specified, try to deduce from x and y points.
     Use masked arrays for missing values.
     """
     from numpy import ma
     x1 = x_1d.min(); x2 = x_1d.max()
     y1 = y_1d.min(); y2 = y_1d.max()
+    
+    xvals = set(x_1d)
+    xvals = numpy.sort(list(xvals))
+    yvals = set(y_1d)
+    yvals = numpy.sort(list(yvals)) 
+       
+    if dx is None:
+        dx = xvals[1] - xvals[0]
+    if dy is None:
+        dy = yvals[1] - yvals[0]   
+        
     mx = int(round((x2-x1)/dx)) + 1
+    if mx != len(xvals):
+        print('*** Possible problem, mx unexpected value')
     my = int(round((y2-y1)/dx)) + 1
+    if mx != len(xvals):
+        print('*** Possible problem, my unexpected value')
+        
     x = numpy.linspace(x1,x2,mx)
     y = numpy.linspace(y1,y2,my)
     X,Y = numpy.meshgrid(x,y,indexing='xy')
