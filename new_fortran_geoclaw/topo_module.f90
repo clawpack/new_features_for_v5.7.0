@@ -233,6 +233,8 @@ contains
                 ! The finest topography will be given priority in any region
                 ! mtopoorder(rank) = i means that i'th topography file has rank rank,
                 ! where the file with rank=1 is the finest and considered first.
+                write(6,*) '+++ ordering, num_dtopo = ',num_dtopo
+                write(6,*) '+++  ordering, mtopofiles = ',mtopofiles
                 do i=1,mtopofiles
                     finer_than = 0
                     do j=1,mtopofiles
@@ -291,6 +293,10 @@ contains
                 ! Check that topo arrays cover full domain:
                 call topoarea(xlower,xupper,ylower,yupper,1,area)
                 area_domain = (yupper-ylower)*(xupper-xlower)
+                write(6,*) '+++ num_dtopo = ',num_dtopo
+                write(6,*) '+++ mtopofiles = ',mtopofiles
+                write(6,*) '+++ area_domain = ',area_domain
+                write(6,*) '+++ area_overlap = ',area
                 if (abs(area - area_domain) > 1e-2*area_domain) then
                     write(6,*) '**** topo arrays do not cover domain'
                     write(6,*) '**** area of overlap = ', area
@@ -1359,21 +1365,33 @@ recursive subroutine topoarea(x1,x2,y1,y2,m,area)
          call intersection(indicator,area,xmlo,xmhi, &
              ymlo,ymhi, x1,x2,y1,y2, &
              xlowtopo(mfid),xhitopo(mfid),ylowtopo(mfid),yhitopo(mfid))
+         
+         write(6,*) '+++ m == mtopofiles = ',m,'   area = ',area
+         write(6,*) '+++   xmlo,xmhi,ymlo,ymhi = ',xmlo,xmhi,ymlo,ymhi
+         write(6,*) '+++   x1,x2,y1,y2 = ',x1,x2,y1,y2
+         write(6,*) '+++   mfid = ',mfid, '  i0 = ',i0
+         write(6,*) '+++   xlowtopo(mfid) = ',xlowtopo(mfid)
+         write(6,*) '+++   xhitopo(mfid) = ',xhitopo(mfid)
+         write(6,*) '+++   ylowtopo(mfid) = ',ylowtopo(mfid)
+         write(6,*) '+++   yhitopo(mfid) = ',yhitopo(mfid)
 
     else
         ! recursive call to compute area using one fewer topo grids:
         call topoarea(x1,x2,y1,y2,m+1,area1)
+         write(6,*) '+++ m == ',m,'   area1 = ',area
 
         ! region of intersection of cell with new topo grid:
         call intersection(indicator,area_m,x1m,x2m, &
              y1m,y2m, x1,x2,y1,y2, &
              xlowtopo(mfid),xhitopo(mfid),ylowtopo(mfid),yhitopo(mfid))
+         write(6,*) '+++ m == ',m,'   area_m = ',area_m
 
         
         if (area_m > 0) then
         
             ! correction to subtract out from previous set of topo grids:
             call topoarea(x1m,x2m,y1m,y2m,m+1,area2)
+             write(6,*) '+++ m == ',m,'   area2 = ',area2
     
             ! adjust integral due to corrections for new topo grid:
             area = area1 - area2 + area_m

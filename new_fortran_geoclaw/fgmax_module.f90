@@ -12,7 +12,7 @@ module fgmax_module
         ! fixed grids in a computation.
 
         ! identifier number for this fixed grid:
-        !integer :: fgno ! deprecated
+        integer :: fgno ! deprecated
         
         integer :: point_style
 
@@ -129,7 +129,7 @@ contains
             if (present(fname)) then
                 call opendatafile(unit, fname)
             else
-                call opendatafile(unit, 'fgmax.data')
+                call opendatafile(unit, 'fgmax_grids.data')
             endif
 
             ! Read in data
@@ -137,6 +137,8 @@ contains
             FG_NUM_VAL = num_fgmax_val        ! module variable name
             read(unit,'(i2)') num_fgmax_grids ! name used in setrun.py
             FG_num_fgrids = num_fgmax_grids   ! module variable name
+            
+            write(6,*) '+++ num_fgmax_grids = ',num_fgmax_grids
 
             if (FG_num_fgrids > FG_MAXNUM_FGRIDS) then
                write(6,601) FG_num_fgrids
@@ -146,8 +148,9 @@ contains
                endif
 
             do ifg=1,FG_num_fgrids
-                read(unit,*) fname_fg
-                call fgmax_read(fname_fg, ifg)
+                !read(unit,*) fname_fg
+                !call fgmax_read(fname_fg, ifg)
+                call fgmax_read(unit, ifg)
                 enddo
             write(parmunit,*) ' '
             write(parmunit,*) '--------------------------------------------'

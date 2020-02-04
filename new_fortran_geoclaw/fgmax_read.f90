@@ -1,5 +1,6 @@
 
-subroutine fgmax_read(fname,ifg)
+!subroutine fgmax_read(fname,ifg)
+subroutine fgmax_read(fgmax_unit,ifg)
 
     ! Read in data file describing any fixed grids.
     ! The file is assumed to have the form:
@@ -39,8 +40,9 @@ subroutine fgmax_read(fname,ifg)
     use topo_module, only: read_topo_header
 
     implicit none
-    character(150), intent(in) :: fname
-    integer, intent(in) :: ifg 
+    !character(150), intent(in) :: fname
+    integer, intent(in) :: ifg, fgmax_unit
+    character(150) :: fname
     integer :: k,i,j,point_style,n12,n23
     real(kind=8) :: x1,x2,y1,y2,yj
     real(kind=8) :: x3,x4,y3,y4,x14,y14,x23,y23,xi,eta
@@ -54,30 +56,41 @@ subroutine fgmax_read(fname,ifg)
     integer :: fg_npts_max, jj
 
 
-    fname2 = 'NOT_SET'
-    inquire(file=trim(fname),exist=foundFile)
-    if (.not. foundFile) then
-      write(*,*) 'Missing fgmax file...'
-      write(*,*) 'Looking for: ',trim(fname)
-      stop
-      endif
+    if (.false.) then
+        fname2 = 'NOT_SET'
+        inquire(file=trim(fname),exist=foundFile)
+        if (.not. foundFile) then
+          write(*,*) 'Missing fgmax file...'
+          write(*,*) 'Looking for: ',trim(fname)
+          stop
+          endif
 
-    open(unit=FG_UNIT,file=trim(fname),status='old')
+        open(unit=FG_UNIT,file=trim(fname),status='old')
+    endif
 
+    write(6,*) '+++ ifg = ',ifg
+    
     fg => FG_fgrids(ifg)   ! point to next element of array of fgrids
-    read(FG_UNIT,*) fg%tstart_max
-    read(FG_UNIT,*) fg%tend_max
-    read(FG_UNIT,*) fg%dt_check  
-    read(FG_UNIT,*) fg%min_level_check
-    read(FG_UNIT,*) fg%arrival_tol
-    read(FG_UNIT,*) point_style
+    read(fgmax_unit,*) fg%fgno
+    read(fgmax_unit,*) fg%tstart_max
+    read(fgmax_unit,*) fg%tend_max
+    read(fgmax_unit,*) fg%dt_check  
+    read(fgmax_unit,*) fg%min_level_check
+    read(fgmax_unit,*) fg%arrival_tol
+    read(fgmax_unit,*) point_style
     fg%point_style = point_style
     if (point_style == 0) then
-        read(FG_UNIT,*) fg%npts
-        if (fg%npts == 0) then
+        read(fgmax_unit,*) fg%npts
+        if (fg%npts .ne. 0) then
+            write(6,*) '*** expected fg%npts == 0'
+            stop
+        endif
+        
+        !if (fg%npts == 0) then
+        if (.true.) then
             ! in this case fname2 is read, separate file containing x,y values:
-            read(FG_UNIT,*) fname2
-            close(unit=FG_UNIT)
+            read(fgmax_unit,*) fname2
+            !close(unit=FG_UNIT)
             write(6,*) 'Reading fgmax points from '
             write(6,*) '    ',trim(fname2)
             open(unit=FG_UNIT,file=trim(fname2),status='old')
@@ -89,20 +102,21 @@ subroutine fgmax_read(fname,ifg)
         do k=1,fg%npts
             read(FG_UNIT,*) fg%x(k), fg%y(k)
             enddo
+        close(FG_UNIT)
 
     else if (point_style == 1) then
-        read(FG_UNIT,*) fg%npts
-        read(FG_UNIT,*) x1,y1
-        read(FG_UNIT,*) x2,y2
+        read(fgmax_unit,*) fg%npts
+        read(fgmax_unit,*) x1,y1
+        read(fgmax_unit,*) x2,y2
         allocate(fg%x(1:fg%npts), fg%y(1:fg%npts))
         do k=1,fg%npts
             fg%x(k) = x1 + (k-1)*(x2-x1)/(fg%npts - 1)
             fg%y(k) = y1 + (k-1)*(y2-y1)/(fg%npts - 1)
             enddo
     else if (point_style == 2) then
-        read(FG_UNIT,*) fg%nx, fg%ny
-        read(FG_UNIT,*) x1,y1
-        read(FG_UNIT,*) x2,y2
+        read(fgmax_unit,*) fg%nx, fg%ny
+        read(fgmax_unit,*) x1,y1
+        read(fgmax_unit,*) x2,y2
         fg%xll = x1
         fg%yll = y1
         fg%dx = (x2-x1)/(fg%nx - 1)
@@ -121,11 +135,11 @@ subroutine fgmax_read(fname,ifg)
                 enddo
             enddo
     else if (point_style == 3) then
-        read(FG_UNIT,*) n12, n23
-        read(FG_UNIT,*) x1,y1
-        read(FG_UNIT,*) x2,y2
-        read(FG_UNIT,*) x3,y3
-        read(FG_UNIT,*) x4,y4
+        read(fgmax_unit,*) n12, n23
+        read(fgmax_unit,*) x1,y1
+        read(fgmax_unit,*) x2,y2
+        read(fgmax_unit,*) x3,y3
+        read(fgmax_unit,*) x4,y4
         fg%npts = n12*n23
         allocate(fg%x(1:fg%npts), fg%y(1:fg%npts))
         
@@ -147,8 +161,8 @@ subroutine fgmax_read(fname,ifg)
         ! in this case read in a file name for a file in 
         ! topotype=3 format that contains 0 at points not to be used,
         ! and 1 (or maybe an index > 0) at the desired fgmax points
-        read(FG_UNIT,*) fname2
-        close(unit=FG_UNIT)
+        read(fgmax_unit,*) fname2
+        !close(unit=FG_UNIT)
         write(6,*) 'Reading fgmax points from '
         write(6,*) '    ',trim(fname2)
         
@@ -187,6 +201,7 @@ subroutine fgmax_read(fname,ifg)
             enddo
         fg%npts = k
         write(6,*) 'npts = ',fg%npts
+        close(FG_UNIT)
 
             
     else

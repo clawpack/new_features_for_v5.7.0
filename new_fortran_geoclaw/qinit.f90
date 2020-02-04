@@ -63,23 +63,6 @@ subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
        endif ! dx and dy agree with dx_fdry, dy_fdry
     endif ! use_force_dry
 
-    if (dx <= 1.d0/3600.d0) then
-     do i=1,mx
-       x = xlower + (i-0.5d0)*dx
-       do j=1,my
-           y = ylower + (j-0.5d0)*dy
-           ! special case of eastern Skagit delta:
-           if (x>-122.33 .and. y>48.25 .and. y<48.4) then
-              q(1,i,j) = 0.d0
-              endif
-           ! special case SE of Samish Island:
-           if (x>-122.5 .and. y>48.52 .and. y<48.57) then
-              q(1,i,j) = 0.d0
-              endif
-
-         enddo ! loop on j
-      enddo ! loop on i
-    endif
     
     ! Add perturbation to initial conditions
     if (qinit_type > 0) then
