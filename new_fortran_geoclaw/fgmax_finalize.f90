@@ -4,7 +4,7 @@ subroutine fgmax_finalize()
     ! Print out the maxval and aux arrays and de-allocate storage.
     
     ! New style introduced in v5.7.0:
-    !   fort.FG0001, etc. instead of fort.FG1.valuemax, fort.FG1.aux
+    !   fgmax0001.txt, etc. instead of fort.FG1.valuemax, fort.FG1.aux
     !   aux(1,:,:) value (topography) on proper level included with values,
     !       instead of separate file giving aux values on all levels.
 
@@ -36,7 +36,8 @@ subroutine fgmax_finalize()
             ifg1 = ifg1/10
             enddo
 
-        fname = 'fort.FG' // cfgno
+        !fname = 'fort.FG' // cfgno
+        fname = 'fgmax' // cfgno // '.txt'
         print *, 'Writing to file ', fname
         open(unit=FG_UNIT,file=trim(fname),status='unknown',form='formatted')
 

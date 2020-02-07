@@ -60,7 +60,7 @@ class FGmaxGrid(object):
         self.dy = None 
 
         # possible output values that may be available after run:
-        self.outdir = '_output'    # where to find GeoClaw output fort.FG*
+        self.outdir = '_output'    # where to find GeoClaw output fgmax*.txt
         self.level = None
         self.X = None
         self.Y = None
@@ -379,20 +379,12 @@ class FGmaxGrid(object):
         if outdir is not None:
             self.outdir = outdir
     
-        # try new style, e.g. fort.FG0001.valuemax
-        fname1 = os.path.join(self.outdir, 'fort.FG%s' \
+        # Require new style in v5.7.0, e.g. fgmax0001.txt etc.
+        fname = os.path.join(self.outdir, 'fgmax%s.txt' \
                 % str(self.fgno).zfill(4))
-        if os.path.isfile(fname1):
-            fname_style = 'new'
-            fname = fname1
-        else:
-            # try old style, e.g. fort.FG1.valuemax
-            fname2 = os.path.join(self.outdir, 'fort.FG%s.valuemax' \
-                % str(self.fgno))
-            fname_style = 'old'
-            fname = fname2
-            if not os.path.isfile(fname2):
-                raise IOError("File not found: %s or %s" % (fname1,fname2))
+                
+        if not os.path.isfile(fname):
+            raise IOError("File not found: %s" % fname)
 
         print("Reading %s ..." % fname)
         d = numpy.loadtxt(fname)
@@ -402,12 +394,9 @@ class FGmaxGrid(object):
             print('point_style == 4, found %i points ' % self.npts)
 
                     
-        if fname_style == 'new':
-            # includes column for B = topo from aux array
-            cols_expected = [7,9,15]  
-        else:
-            cols_expected = [6,8,14]
-            
+        # new format in v5.7.0, includes column for B = topo from aux array
+        cols_expected = [7,9,15]  
+                    
         ncols = d.shape[1]
         
         if ncols not in cols_expected:
@@ -424,56 +413,31 @@ class FGmaxGrid(object):
         ind_hss_time = None
         ind_hmin_time = None
         
-        if fname_style == 'new':
-            ind_x = 0
-            ind_y = 1
-            ind_level = 2
-            ind_B = 3  # added in new fname style
-            ind_h = 4
-            if ncols == 7:
-                ind_h_time = 5
-                ind_arrival_time = 6
-            elif ncols == 9:
-                ind_s = 5
-                ind_h_time = 6
-                ind_s_time = 7
-                ind_arrival_time = 8
-            elif ncols == 15:
-                ind_s = 5
-                ind_hs = 6
-                ind_hss = 7
-                ind_hmin = 8
-                ind_h_time = 9
-                ind_s_time = 10
-                ind_hs_time = 11
-                ind_hss_time = 12
-                ind_hmin_time = 13
-                ind_arrival_time = 14
-        else:
-            # original style:
-            ind_x = 0
-            ind_y = 1
-            ind_level = 2
-            ind_h = 3
-            if ncols == 6:
-                ind_h_time = 4
-                ind_arrival_time = 5
-            elif ncols == 8:
-                ind_s = 4
-                ind_h_time = 5
-                ind_s_time = 6
-                ind_arrival_time = 7
-            elif ncols == 14:
-                ind_s = 4
-                ind_hs = 5
-                ind_hss = 6
-                ind_hmin = 7
-                ind_h_time = 8
-                ind_s_time = 9
-                ind_hs_time = 10
-                ind_hss_time = 11
-                ind_hmin_time = 12
-                ind_arrival_time = 13
+        ind_x = 0
+        ind_y = 1
+        ind_level = 2
+        ind_B = 3  # added in new fname style
+        ind_h = 4
+        if ncols == 7:
+            ind_h_time = 5
+            ind_arrival_time = 6
+        elif ncols == 9:
+            ind_s = 5
+            ind_h_time = 6
+            ind_s_time = 7
+            ind_arrival_time = 8
+        elif ncols == 15:
+            ind_s = 5
+            ind_hs = 6
+            ind_hss = 7
+            ind_hmin = 8
+            ind_h_time = 9
+            ind_s_time = 10
+            ind_hs_time = 11
+            ind_hss_time = 12
+            ind_hmin_time = 13
+            ind_arrival_time = 14
+
     
         if point_style in [0,1,4]:
             fg_shape = (self.npts,)
@@ -494,33 +458,7 @@ class FGmaxGrid(object):
         level = numpy.reshape(d[:,ind_level].astype('int'),fg_shape,order='F')
         
         # Set B = topo array
-        if fname_style == 'new':
-            B = numpy.reshape(d[:,ind_B],fg_shape,order='F')
-        else:
-            # old style was to read all aux arrays and select proper column
-            fname = os.path.join(self.outdir, 'fort.FG%s.aux1' \
-                    % str(self.fgno))
-
-            if not os.path.isfile(fname):
-                raise IOError("File not found: %s" % fname)
-
-            print("Reading %s ..." % fname)
-            daux = numpy.loadtxt(fname,comments='#')
-        
-            ncols = d.shape[1]  
-                
-            topo = []
-            nlevels = daux.shape[1]
-            for i in range(2,nlevels):
-                topoi = numpy.reshape(daux[:,i],fg_shape,order='F')
-                topoi = ma.masked_where(topoi < -1e50, topoi)
-                topo.append(topoi)
-        
-            B = ma.masked_where(level==0, topo[0])  # level==0 ==> never updated
-            levelmax = level.max()
-            for i in range(levelmax):
-                B = numpy.where(level==i+1, topo[i], B)
-    
+        B = numpy.reshape(d[:,ind_B],fg_shape,order='F')
     
         mask = (h < -1e50)  # points that were never set
         B = ma.masked_where(mask, B)
